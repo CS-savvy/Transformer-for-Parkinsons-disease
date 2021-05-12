@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from network.Encoder import Encoder
 from network.Layers import FeatureEmbeddings
+import torch.nn.functional as F
 
 
 class Transformer(nn.Module):
@@ -17,8 +18,7 @@ class Transformer(nn.Module):
         x = self.feature_embedding(features)
         x = self.encoder(x)
         x = x.view(x.size(0), -1)
-        x = self.linear(x)
-
+        x = F.sigmoid(self.linear(x))
         return x
 
 
