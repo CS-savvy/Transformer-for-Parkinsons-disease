@@ -1,6 +1,6 @@
 import torch.nn as nn
-from Layers import EncoderLayer
-from Layers import Norm
+from network.Layers import EncoderLayer
+from network.Layers import Norm
 import copy
 
 
@@ -14,7 +14,7 @@ class Encoder(nn.Module):
     def _get_clones(self, module, N):
         return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
-    def forward(self, src, mask):
+    def forward(self, src, mask=None):
         for i in range(self.N):
             x = self.layers[i](src, mask)
         return self.norm(x)

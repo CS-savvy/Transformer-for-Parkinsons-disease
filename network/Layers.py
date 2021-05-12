@@ -119,7 +119,7 @@ class FeatureEmbedder(nn.Module):
         self.linear_2 = nn.Linear(hidden, d_model)
 
     def forward(self, x):
-        x = self.linear_1(x)
+        x = F.relu(self.linear_1(x))
         x = self.linear_2(x)
         return x
 
@@ -144,6 +144,8 @@ if __name__ == '__main__':
 
     dummy_input = torch.randn(5, 700)
     f = FeatureEmbeddings(25, 10, feature_length=700)
+    E = EncoderLayer(25, 1)
     k = f(dummy_input)
+    k = E(k, None)
 
     print()
