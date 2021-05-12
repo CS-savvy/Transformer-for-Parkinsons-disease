@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+import copy
 
 
 class EncoderLayer(nn.Module):
@@ -107,3 +108,42 @@ class FeedForward(nn.Module):
         x = self.dropout(F.relu(self.linear_1(x)))
         x = self.linear_2(x)
         return x
+
+
+class FeatureEmbedder(nn.Module):
+    def __init__(self, d_model, hidden):
+        super().__init__()
+
+        # We set d_ff as a default to 2048
+        self.linear_1 = nn.Linear(1, hidden)
+        self.linear_2 = nn.Linear(hidden, d_model)
+
+    def forward(self, x):
+        x = self.linear_1(x)
+        x = self.linear_2(x)
+        return x
+
+
+class FeatureEmbeddings(nn.Module):
+    def __init__(self, d_model, hidden, feature_length=700):
+        super().__init__()
+        self.feature_length = feature_length
+        self.feature_layers = self._get_clones(FeatureEmbedder(d_model, hidden), feature_length)
+
+    def _get_clones(self, module, N):
+        return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
+    def forward(self, x):
+        features = []
+        for i in range(self.feature_length):
+            features.append(self.feature_layers[i](x[:, i].unsqueeze(dim=1)))
+        return torch.stack(features, dim=1)
+
+
+if __name__ == '__main__':
+
+    dummy_input = torch.randn(5, 700)
+    f = FeatureEmbeddings(25, 10, feature_length=700)
+    k = f(dummy_input)
+
+    print()

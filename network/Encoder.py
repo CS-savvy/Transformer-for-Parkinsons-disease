@@ -15,8 +15,6 @@ class Encoder(nn.Module):
         return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
     def forward(self, src, mask):
-        x = self.embed(src)
-        x = self.pe(x)
         for i in range(self.N):
-            x = self.layers[i](x, mask)
+            x = self.layers[i](src, mask)
         return self.norm(x)
