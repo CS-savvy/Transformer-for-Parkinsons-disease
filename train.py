@@ -9,11 +9,14 @@ import torch.nn as nn
 from tqdm import tqdm
 from torchvision import transforms
 import torch.nn.functional as F
+from random import shuffle
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("using device : ", device)
 
-def train(model, train_dataloader, epochs):
+
+def train(model, train_data, val_data, epochs):
+
     model = model.to(device)
     # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     criterion = nn.BCEWithLogitsLoss()
@@ -22,6 +25,8 @@ def train(model, train_dataloader, epochs):
 
     train_loss_history = []
     train_accuracy_history = []
+    val_loss_history = []
+    val_accuracy_history = []
 
     for epoch in range(1, epochs + 1):
 
@@ -30,7 +35,7 @@ def train(model, train_dataloader, epochs):
         y_preds = []
         y_labels = []
 
-        for batch_data in tqdm(train_dataloader, desc="Epoch %s" % epoch):
+        for batch_data in train_data:
             # get the inputs; data is a list of [inputs, labels]
             features = batch_data['features']
             labels = batch_data['label']
@@ -54,16 +59,35 @@ def train(model, train_dataloader, epochs):
             train_loss_mini_batch.append(loss.item())
             # print("Mini batch loss", loss.item())
         else:
-            train_loss = sum(train_loss_mini_batch) / len(train_accuracy_mini_batch)
-            train_accuracy = sum(train_accuracy_mini_batch) / train_dataloader.sampler.num_samples
-            # recall = recall_score(y_labels, y_preds)
+            train_loss = sum(train_loss_mini_batch) / len(train_loss_mini_batch)
+            train_accuracy = sum(train_accuracy_mini_batch) / train_data.sampler.num_samples
             train_loss_history.append(train_loss)
             train_accuracy_history.append(train_accuracy)
-            # recall_history.append(recall)
 
+            val_loss_mini_batch = []
+            val_accuracy_mini_batch = []
+            with torch.no_grad():
+                for batch_data in val_data:
+                    features = batch_data['features']
+                    labels = batch_data['label']
+                    features = features.to(device)
+                    labels = labels.to(device)
+
+                    outputs = model(features)
+                    loss = criterion(outputs, labels)
+                    preds = F.sigmoid(outputs).round()
+                    val_accuracy_mini_batch.append(torch.sum(preds == labels).item())
+                    val_loss_mini_batch.append(loss.item())
+
+            val_loss = sum(val_loss_mini_batch) / len(val_loss_mini_batch)
+            val_accuracy = sum(val_accuracy_mini_batch) / val_data.sampler.num_samples
+            val_loss_history.append(val_loss)
+            val_accuracy_history.append(val_accuracy)
             print(f"Metrics for Epoch {epoch}: Train Loss:{round(train_loss, 8)} \
                     Train Accuracy: {round(train_accuracy, 8)}")
-
+            print(f"Metrics for Epoch {epoch}: val Loss:{round(val_loss, 8)} \
+                    Val Accuracy: {round(val_accuracy, 8)}")
+            print()
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
@@ -74,14 +98,22 @@ if __name__ == '__main__':
 
     # split name must equal to split filename eg: for train.txt -> train
     parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
-    train_data = DataLoader(parkinson_dataset, batch_size=32, shuffle=True)
+
+    indexes = list(range(parkinson_dataset.__len__()))
+    shuffle(indexes)
+    train_indices, val_indices = indexes[:660], indexes[660:]
+    train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
+    val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
+
+    train_dataloader = DataLoader(train_set, batch_size=32, shuffle=True)
+    val_dataloader = DataLoader(val_set, batch_size=32, shuffle=True)
 
     epoch = 20
-    embedding_dim = 64
+    embedding_dim = 16
     encoder_layer = 6
     attention_head = 1
 
-    model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.1, feature_length=753)
-    history = train(model, train_data, epoch)
+    tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.2, feature_length=753)
+    history = train(tf_model, train_dataloader, val_dataloader, epoch)
 
     print(history)

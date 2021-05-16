@@ -64,9 +64,15 @@ class ToTensor(object):
 if __name__ == "__main__":
 
     parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
-    dataloader = DataLoader(parkinson_dataset, batch_size=4, shuffle=True, num_workers=0)
 
-    for i_batch, sample_batched in enumerate(dataloader):
+    indexes = list(range(parkinson_dataset.__len__()))
+    train_indices, val_indices = indexes[:660], indexes[660:]
+    train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
+    val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
+
+    train_dataloader = DataLoader(train_set, batch_size=4, shuffle=True, num_workers=0)
+    val_dataloader = DataLoader(val_set, batch_size=4, shuffle=True, num_workers=0)
+    for i_batch, sample_batched in enumerate(train_dataloader):
         print(i_batch, sample_batched['features'].size(), sample_batched['label'].size())
 
         break
