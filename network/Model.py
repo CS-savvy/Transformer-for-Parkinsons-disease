@@ -18,7 +18,7 @@ class Transformer(nn.Module):
         x = self.feature_embedding(features)
         x = self.encoder(x)
         x = x.view(x.size(0), -1)
-        x = F.sigmoid(self.linear(x))
+        x = self.linear(x)
         return x
 
 
