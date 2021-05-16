@@ -21,7 +21,20 @@ class ParkinsonsDataset(Dataset):
                 on a sample.
         """
         self.feature_frame = pd.read_csv(csv_file, skiprows=[0])
+        self._preprocess()
         self.transform = transform
+
+    def _preprocess(self):
+        print("Normalizing data..")
+        df = self.feature_frame
+        df.drop(columns=['id'], inplace=True)
+        skip_column = ['gender', 'class']
+        columns =list(df.columns)
+        columns = [c for c in columns if c not in skip_column]
+        for col in columns:
+            df[col] = (df[col] - df[col].mean())/df[col].std(ddof=0)
+        df = df.sample(frac=1).reset_index(drop=True)
+        self.feature_frame = df
 
     def __len__(self):
         return len(self.feature_frame)

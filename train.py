@@ -18,7 +18,7 @@ def train(model, train_dataloader, epochs):
     # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     criterion = nn.BCEWithLogitsLoss()
     # criterion = FocalLoss(alpha=2, gamma=5)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     train_loss_history = []
     train_accuracy_history = []
@@ -74,14 +74,14 @@ if __name__ == '__main__':
 
     # split name must equal to split filename eg: for train.txt -> train
     parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
-    train_data = DataLoader(parkinson_dataset, batch_size=16, shuffle=True)
+    train_data = DataLoader(parkinson_dataset, batch_size=32, shuffle=True)
 
-    epoch = 10
+    epoch = 20
     embedding_dim = 64
     encoder_layer = 6
     attention_head = 1
 
-    model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.1, feature_length=754)
+    model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.1, feature_length=753)
     history = train(model, train_data, epoch)
 
     print(history)
