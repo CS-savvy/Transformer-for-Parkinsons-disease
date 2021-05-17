@@ -1,15 +1,16 @@
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from network.Model import Transformer
 from DataLoader import ParkinsonsDataset, ToTensor
-# from sklearn.metrics import recall_score
+# from sklearn import metrics
+from sklearn.model_selection import KFold
 import torch.nn as nn
 # from focal_loss.focal_loss import FocalLoss
 # from torch.utils.tensorboard import SummaryWriter
-from tqdm import tqdm
 from torchvision import transforms
 import torch.nn.functional as F
-from random import shuffle
+
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("using device : ", device)
@@ -28,6 +29,7 @@ def train(model, train_data, val_data, epochs):
     val_loss_history = []
     val_accuracy_history = []
 
+    print("Training started ...")
     for epoch in range(1, epochs + 1):
 
         train_loss_mini_batch = []
@@ -88,32 +90,44 @@ def train(model, train_data, val_data, epochs):
             print(f"Metrics for Epoch {epoch}: val Loss:{round(val_loss, 8)} \
                     Val Accuracy: {round(val_accuracy, 8)}")
             print()
+
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
+        'val_loss': val_loss_history,
+        'val_accuracy': val_accuracy_history
     }
 
 
 if __name__ == '__main__':
 
-    # split name must equal to split filename eg: for train.txt -> train
     parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
 
-    indexes = list(range(parkinson_dataset.__len__()))
-    shuffle(indexes)
-    train_indices, val_indices = indexes[:660], indexes[660:]
-    train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
-    val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
-
-    train_dataloader = DataLoader(train_set, batch_size=32, shuffle=True)
-    val_dataloader = DataLoader(val_set, batch_size=32, shuffle=True)
-
-    epoch = 20
+    epoch = 16
     embedding_dim = 16
     encoder_layer = 6
-    attention_head = 1
+    attention_head = 2
 
-    tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.2, feature_length=753)
-    history = train(tf_model, train_dataloader, val_dataloader, epoch)
+    k_fold = 10
+    kfold = KFold(n_splits=k_fold, shuffle=True, random_state=450)
+    model_histories = []
+    i = 0
+    for train_indices, val_indices in kfold.split(parkinson_dataset):
+        i+=1
+        print(f"Started {i} of {k_fold}-fold training .... ")
+        train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
+        val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
 
-    print(history)
+        train_dataloader = DataLoader(train_set, batch_size=32, shuffle=True)
+        val_dataloader = DataLoader(val_set, batch_size=32, shuffle=True)
+
+        tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.1, feature_length=753)
+        history = train(tf_model, train_dataloader, val_dataloader, epoch)
+
+        print(history)
+        model_histories.append(history)
+
+    max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
+    print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
+
+# 0.9087192982456139

@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 class ParkinsonsDataset(Dataset):
     """parkinson's dataset."""
 
-    def __init__(self, csv_file, transform=None):
+    def __init__(self, csv_file, shuffle=False, transform=None):
         """
         Args:
             csv_file (string): Path to the csv file with features and label.
@@ -21,6 +21,7 @@ class ParkinsonsDataset(Dataset):
                 on a sample.
         """
         self.feature_frame = pd.read_csv(csv_file, skiprows=[0])
+        self.shuffle = shuffle
         self._preprocess()
         self.transform = transform
 
@@ -33,7 +34,9 @@ class ParkinsonsDataset(Dataset):
         columns = [c for c in columns if c not in skip_column]
         for col in columns:
             df[col] = (df[col] - df[col].mean())/df[col].std(ddof=0)
-        df = df.sample(frac=1).reset_index(drop=True)
+
+        if self.shuffle:
+            df = df.sample(frac=1).reset_index(drop=True)
         self.feature_frame = df
 
     def __len__(self):
