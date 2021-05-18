@@ -102,11 +102,11 @@ def train(model, train_data, val_data, epochs):
 if __name__ == '__main__':
 
     parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
-
     epoch = 16
     embedding_dim = 16
     encoder_layer = 6
-    attention_head = 2
+    attention_head = 1
+    dropout = 0.1
 
     k_fold = 10
     kfold = KFold(n_splits=k_fold, shuffle=True, random_state=450)
@@ -121,12 +121,13 @@ if __name__ == '__main__':
         train_dataloader = DataLoader(train_set, batch_size=32, shuffle=True)
         val_dataloader = DataLoader(val_set, batch_size=32, shuffle=True)
 
-        tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=0.1, feature_length=753)
+        tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=dropout, feature_length=753)
         history = train(tf_model, train_dataloader, val_dataloader, epoch)
 
         print(history)
         model_histories.append(history)
-
+        if i == 4:
+            break
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
     print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
 

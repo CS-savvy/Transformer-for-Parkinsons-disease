@@ -11,12 +11,14 @@ class Transformer(nn.Module):
 
         self.feature_embedding = FeatureEmbeddings(d_model, d_model//2, feature_length)
         self.encoder = Encoder(d_model, N, heads, dropout)
-        self.linear = nn.Linear(d_model*feature_length, 1)
+        self.linear = nn.Linear(feature_length, 1)
 
     def forward(self, features):
 
         x = self.feature_embedding(features)
         x = self.encoder(x)
+        # x = x.view(x.size(0), -1)
+        x = F.adaptive_avg_pool1d(x, output_size=1)
         x = x.view(x.size(0), -1)
         x = self.linear(x)
         return x
