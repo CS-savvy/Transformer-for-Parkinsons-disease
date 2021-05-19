@@ -1,28 +1,29 @@
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from network.Model import Transformer
-from DataLoader import ParkinsonsDataset, ToTensor
+from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup
+from DataLoader import ParkinsonsDataset, ToTensor, ToTensorGroup
 # from sklearn import metrics
 from sklearn.model_selection import KFold
 import torch.nn as nn
-# from focal_loss.focal_loss import FocalLoss
+from focal_loss.focal_loss import FocalLoss
 # from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.nn.functional as F
+import config
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("using device : ", device)
 
 
-def train(model, train_data, val_data, epochs):
+def train(model, train_data, val_data):
 
     model = model.to(device)
     # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     criterion = nn.BCEWithLogitsLoss()
     # criterion = FocalLoss(alpha=2, gamma=5)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.LR)
 
     train_loss_history = []
     train_accuracy_history = []
@@ -30,18 +31,19 @@ def train(model, train_data, val_data, epochs):
     val_accuracy_history = []
 
     print("Training started ...")
-    for epoch in range(1, epochs + 1):
+    for epoch in range(1, config.EPOCH + 1):
 
         train_loss_mini_batch = []
         train_accuracy_mini_batch = []
         y_preds = []
         y_labels = []
-
+        model.train()
         for batch_data in train_data:
             # get the inputs; data is a list of [inputs, labels]
             features = batch_data['features']
+            features = [f.to(device) for f in features]
             labels = batch_data['label']
-            features = features.to(device)
+            # features = features.to(device)
             labels = labels.to(device)
 
             # zero the parameter gradients
@@ -68,11 +70,13 @@ def train(model, train_data, val_data, epochs):
 
             val_loss_mini_batch = []
             val_accuracy_mini_batch = []
+            model.eval()
             with torch.no_grad():
                 for batch_data in val_data:
                     features = batch_data['features']
                     labels = batch_data['label']
-                    features = features.to(device)
+                    features = [f.to(device) for f in features]
+                    # features = features.to(device)
                     labels = labels.to(device)
 
                     outputs = model(features)
@@ -101,12 +105,10 @@ def train(model, train_data, val_data, epochs):
 
 if __name__ == '__main__':
 
-    parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
-    epoch = 16
-    embedding_dim = 16
-    encoder_layer = 6
-    attention_head = 1
-    dropout = 0.1
+    parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv',
+                                          select_feature=config.FEATURES,
+                                          feature_mapping_csv='data/feature_mapping.csv',
+                                          transform=transforms.Compose([ToTensorGroup()]))
 
     k_fold = 10
     kfold = KFold(n_splits=k_fold, shuffle=True, random_state=450)
@@ -118,16 +120,16 @@ if __name__ == '__main__':
         train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
         val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
 
-        train_dataloader = DataLoader(train_set, batch_size=32, shuffle=True)
-        val_dataloader = DataLoader(val_set, batch_size=32, shuffle=True)
+        train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
+        val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=True)
 
-        tf_model = Transformer(embedding_dim, encoder_layer, attention_head, dropout=dropout, feature_length=753)
-        history = train(tf_model, train_dataloader, val_dataloader, epoch)
+        tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+                               dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
+        history = train(tf_model, train_dataloader, val_dataloader)
 
         print(history)
         model_histories.append(history)
-        if i == 4:
-            break
+
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
     print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
 

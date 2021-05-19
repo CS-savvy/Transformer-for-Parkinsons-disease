@@ -107,15 +107,15 @@ class FeedForward(nn.Module):
 
 
 class FeatureEmbedder(nn.Module):
-    def __init__(self, d_model, hidden):
+    def __init__(self, d_model, hidden, input):
         super().__init__()
-
-        # We set d_ff as a default to 2048
-        self.linear_1 = nn.Linear(1, hidden)
+        self.linear_1 = nn.Linear(input, hidden)
         self.linear_2 = nn.Linear(hidden, d_model)
+        self.dropout = nn.Dropout(0.1)
 
     def forward(self, x):
         x = F.relu(self.linear_1(x))
+        x = self.dropout(x)
         x = self.linear_2(x)
         return x
 
@@ -124,7 +124,7 @@ class FeatureEmbeddings(nn.Module):
     def __init__(self, d_model, hidden, feature_length=700):
         super().__init__()
         self.feature_length = feature_length
-        self.feature_layers = self._get_clones(FeatureEmbedder(d_model, hidden), feature_length)
+        self.feature_layers = self._get_clones(FeatureEmbedder(d_model, hidden, 1), feature_length)
 
     def _get_clones(self, module, N):
         return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
@@ -136,10 +136,39 @@ class FeatureEmbeddings(nn.Module):
         return torch.stack(features, dim=1)
 
 
+class FeatureEmbeddingsGroup(nn.Module):
+    def __init__(self, d_model, hidden, feature_set):
+        super().__init__()
+        self.feature_length = len(feature_set)
+        self.feature_layers = nn.ModuleList([FeatureEmbedder(d_model, hidden, fsize) for fsize in feature_set])
+
+    def forward(self, x):
+        features = []
+        for i in range(self.feature_length):
+            features.append(self.feature_layers[i](x[i]))
+        return torch.stack(features, dim=1)
+
+
+class FeatureEmbeddings_single(nn.Module):
+    def __init__(self, d_model, hidden, feature_length=700):
+        super().__init__()
+        self.feature_length = feature_length
+        self.feature_layers = FeatureEmbedder(d_model, hidden, 1)
+
+    # def _get_clones(self, module, N):
+    #     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
+    def forward(self, x):
+        features = []
+        for i in range(self.feature_length):
+            features.append(self.feature_layers(x[:, i].unsqueeze(dim=1)))
+        return torch.stack(features, dim=1)
+
+
 if __name__ == '__main__':
 
     dummy_input = torch.randn(5, 700)
-    f = FeatureEmbeddings(25, 10, feature_length=700)
+    f = FeatureEmbeddingsGroup(64, 32, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
     E = EncoderLayer(25, 1)
     k = f(dummy_input)
     k = E(k, None)

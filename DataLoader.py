@@ -4,7 +4,7 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from pathlib import Path
-
+import config
 # Ignore warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 class ParkinsonsDataset(Dataset):
     """parkinson's dataset."""
 
-    def __init__(self, csv_file, shuffle=False, transform=None):
+    def __init__(self, csv_file, select_feature=None, feature_mapping_csv=None, shuffle=False, transform=None):
         """
         Args:
             csv_file (string): Path to the csv file with features and label.
@@ -22,8 +22,13 @@ class ParkinsonsDataset(Dataset):
         """
         self.feature_frame = pd.read_csv(csv_file, skiprows=[0])
         self.shuffle = shuffle
+        self.feature_mapping = pd.read_csv(feature_mapping_csv, index_col='Feature Type')
+        self.select_feature = select_feature
+        self.grouped_frame = {}
         self._preprocess()
+        # self._filter_feature()
         self.transform = transform
+        self._group()
 
     def _preprocess(self):
         print("Normalizing data..")
@@ -39,19 +44,48 @@ class ParkinsonsDataset(Dataset):
             df = df.sample(frac=1).reset_index(drop=True)
         self.feature_frame = df
 
+    def _filter_feature(self):
+        if self.select_feature:
+            feature_map_df = self.feature_mapping
+            req_feat = feature_map_df.loc[self.select_feature]['Features'].tolist()
+            self.feature_frame = self.feature_frame[req_feat + ['class']]
+
+    def _group(self):
+        df = self.feature_frame
+        feature_map_df = self.feature_mapping
+        for feature in self.select_feature:
+            req_feat = feature_map_df.loc[feature]['Features'].tolist()
+            self.grouped_frame[feature] = df[req_feat].copy()
+
     def __len__(self):
         return len(self.feature_frame)
+
+    # def __getitem__(self, idx):
+    #     if torch.is_tensor(idx):
+    #         idx = idx.tolist()
+    #
+    #     datapoint = self.feature_frame.iloc[idx].to_numpy(dtype=np.float32)
+    #     features, label = datapoint[:-1], datapoint[-1]
+    #     sample = {'features': features, 'label': label}
+    #     if self.transform:
+    #         sample = self.transform(sample)
+    #
+    #     return sample
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
         datapoint = self.feature_frame.iloc[idx].to_numpy(dtype=np.float32)
-        features, label = datapoint[:-1], datapoint[-1]
+        label = datapoint[-1]
+        features = []
+
+        for feature_type, df in self.grouped_frame.items():
+            datapoint = df.iloc[idx].to_numpy(dtype=np.float32)
+            features.append(datapoint)
+
         sample = {'features': features, 'label': label}
         if self.transform:
             sample = self.transform(sample)
-
         return sample
 
 
@@ -64,9 +98,21 @@ class ToTensor(object):
                 'label': torch.Tensor([label])}
 
 
+class ToTensorGroup(object):
+    """Convert ndarrays in sample to Tensors."""
+
+    def __call__(self, sample):
+        features, label = sample['features'], sample['label']
+        return {'features': [torch.from_numpy(feature) for feature in features],
+                'label': torch.Tensor([label])}
+
+
 if __name__ == "__main__":
 
-    parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv', transform=transforms.Compose([ToTensor()]))
+    parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv',
+                                          select_feature=config.FEATURES,
+                                          feature_mapping_csv='data/feature_mapping.csv',
+                                          transform=transforms.Compose([ToTensorGroup()]))
 
     indexes = list(range(parkinson_dataset.__len__()))
     train_indices, val_indices = indexes[:660], indexes[660:]
@@ -77,5 +123,4 @@ if __name__ == "__main__":
     val_dataloader = DataLoader(val_set, batch_size=4, shuffle=True, num_workers=0)
     for i_batch, sample_batched in enumerate(train_dataloader):
         print(i_batch, sample_batched['features'].size(), sample_batched['label'].size())
-
         break
