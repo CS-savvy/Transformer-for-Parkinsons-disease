@@ -22,7 +22,7 @@ data = df.to_numpy(dtype=np.float32)
 feature_names = ['gender'] + columns
 features, labels = data[:, :-1], data[:, -1]
 
-sfs = SFS(svm.SVC(), k_features=512, forward=True, floating=False, scoring='accuracy', cv=0, n_jobs=16, verbose=1)
+sfs = SFS(svm.SVC(), k_features=256, forward=True, floating=False, scoring='accuracy', cv=0, n_jobs=16, verbose=1)
 sfs_his = sfs.fit(features, labels, custom_feature_names=feature_names)
 selected_features= sfs_his.k_feature_names_
 print("Feature selected :", selected_features)
