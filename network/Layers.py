@@ -139,13 +139,13 @@ class FeatureEmbeddings(nn.Module):
 class FeatureEmbeddingsGroup(nn.Module):
     def __init__(self, d_model, hidden, feature_set):
         super().__init__()
-        self.feature_length = len(feature_set)
+        self.feature_length = feature_set
         self.feature_layers = nn.ModuleList([FeatureEmbedder(d_model, hidden, fsize) for fsize in feature_set])
 
     def forward(self, x):
         features = []
-        for i in range(self.feature_length):
-            features.append(self.feature_layers[i](x[i]))
+        for i, size in enumerate(self.feature_length):
+            features.append(self.feature_layers[i](x[:, i, :size]))
         return torch.stack(features, dim=1)
 
 

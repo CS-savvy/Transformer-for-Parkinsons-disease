@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 class ParkinsonsDataset(Dataset):
     """parkinson's dataset."""
 
-    def __init__(self, csv_file, select_feature=None, feature_mapping_csv=None, shuffle=False, transform=None):
+    def __init__(self, csv_file, max_length=432, select_feature=None, feature_mapping_csv=None, shuffle=False, transform=None):
         """
         Args:
             csv_file (string): Path to the csv file with features and label.
@@ -24,7 +24,8 @@ class ParkinsonsDataset(Dataset):
         self.shuffle = shuffle
         self.feature_mapping = pd.read_csv(feature_mapping_csv, index_col='Feature Type')
         self.select_feature = select_feature
-        self.grouped_frame = {}
+        self.max_length = max_length
+        self.grouped_frame = []
         self._preprocess()
         # self._filter_feature()
         self.transform = transform
@@ -35,7 +36,7 @@ class ParkinsonsDataset(Dataset):
         df = self.feature_frame
         df.drop(columns=['id'], inplace=True)
         skip_column = ['gender', 'class']
-        columns =list(df.columns)
+        columns = list(df.columns)
         columns = [c for c in columns if c not in skip_column]
         for col in columns:
             df[col] = (df[col] - df[col].mean())/df[col].std(ddof=0)
@@ -55,7 +56,7 @@ class ParkinsonsDataset(Dataset):
         feature_map_df = self.feature_mapping
         for feature in self.select_feature:
             req_feat = feature_map_df.loc[feature]['Features'].tolist()
-            self.grouped_frame[feature] = df[req_feat].copy()
+            self.grouped_frame.append((feature, df[req_feat].copy()))
 
     def __len__(self):
         return len(self.feature_frame)
@@ -78,11 +79,11 @@ class ParkinsonsDataset(Dataset):
         datapoint = self.feature_frame.iloc[idx].to_numpy(dtype=np.float32)
         label = datapoint[-1]
         features = []
-
-        for feature_type, df in self.grouped_frame.items():
+        for feature_type, df in self.grouped_frame:
             datapoint = df.iloc[idx].to_numpy(dtype=np.float32)
+            datapoint = np.pad(datapoint, (0, self.max_length - datapoint.shape[0]), 'constant')
             features.append(datapoint)
-
+        features = np.array(features)
         sample = {'features': features, 'label': label}
         if self.transform:
             sample = self.transform(sample)
@@ -103,7 +104,7 @@ class ToTensorGroup(object):
 
     def __call__(self, sample):
         features, label = sample['features'], sample['label']
-        return {'features': [torch.from_numpy(feature) for feature in features],
+        return {'features': torch.from_numpy(features),
                 'label': torch.Tensor([label])}
 
 

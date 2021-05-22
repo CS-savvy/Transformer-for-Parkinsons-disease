@@ -7,7 +7,7 @@ from DataLoader import ParkinsonsDataset, ToTensor, ToTensorGroup
 from sklearn.model_selection import KFold
 import torch.nn as nn
 from focal_loss.focal_loss import FocalLoss
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.nn.functional as F
 import config
@@ -20,7 +20,7 @@ print("using device : ", device)
 def train(model, train_data, val_data):
 
     model = model.to(device)
-    # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
+    writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     criterion = nn.BCEWithLogitsLoss()
     # criterion = FocalLoss(alpha=2, gamma=5)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR)
@@ -30,6 +30,10 @@ def train(model, train_data, val_data):
     val_loss_history = []
     val_accuracy_history = []
 
+    sample_data = train_data.__iter__().next()
+    features = sample_data['features']
+    features = features.to(device)
+    writer.add_graph(model, input_to_model=features)
     print("Training started ...")
     for epoch in range(1, config.EPOCH + 1):
 
@@ -41,7 +45,7 @@ def train(model, train_data, val_data):
         for batch_data in train_data:
             # get the inputs; data is a list of [inputs, labels]
             features = batch_data['features']
-            features = [f.to(device) for f in features]
+            features = features.to(device)
             labels = batch_data['label']
             # features = features.to(device)
             labels = labels.to(device)
@@ -75,8 +79,7 @@ def train(model, train_data, val_data):
                 for batch_data in val_data:
                     features = batch_data['features']
                     labels = batch_data['label']
-                    features = [f.to(device) for f in features]
-                    # features = features.to(device)
+                    features = features.to(device)
                     labels = labels.to(device)
 
                     outputs = model(features)
@@ -89,12 +92,20 @@ def train(model, train_data, val_data):
             val_accuracy = sum(val_accuracy_mini_batch) / val_data.sampler.num_samples
             val_loss_history.append(val_loss)
             val_accuracy_history.append(val_accuracy)
+
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Accuracy/train', train_accuracy, epoch)
+            writer.add_scalar('Loss/validation', val_loss, epoch)
+            writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
+
             print(f"Metrics for Epoch {epoch}: Train Loss:{round(train_loss, 8)} \
                     Train Accuracy: {round(train_accuracy, 8)}")
             print(f"Metrics for Epoch {epoch}: val Loss:{round(val_loss, 8)} \
                     Val Accuracy: {round(val_accuracy, 8)}")
             print()
 
+    writer.flush()
+    writer.close()
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
