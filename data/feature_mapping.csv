@@ -1,0 +1,755 @@
+Feature Type,Features
+Basic Info,gender
+Baseline Features,PPE
+Baseline Features,DFA
+Baseline Features,RPDE
+Baseline Features,numPulses
+Baseline Features,numPeriodsPulses
+Baseline Features,meanPeriodPulses
+Baseline Features,stdDevPeriodPulses
+Baseline Features,locPctJitter
+Baseline Features,locAbsJitter
+Baseline Features,rapJitter
+Baseline Features,ppq5Jitter
+Baseline Features,ddpJitter
+Baseline Features,locShimmer
+Baseline Features,locDbShimmer
+Baseline Features,apq3Shimmer
+Baseline Features,apq5Shimmer
+Baseline Features,apq11Shimmer
+Baseline Features,ddaShimmer
+Baseline Features,meanAutoCorrHarmonicity
+Baseline Features,meanNoiseToHarmHarmonicity
+Baseline Features,meanHarmToNoiseHarmonicity
+Intensity Parameters,minIntensity
+Intensity Parameters,maxIntensity
+Intensity Parameters,meanIntensity
+Formant Frequencies,f1
+Formant Frequencies,f2
+Formant Frequencies,f3
+Formant Frequencies,f4
+Bandwidth Parameters,b1
+Bandwidth Parameters,b2
+Bandwidth Parameters,b3
+Bandwidth Parameters,b4
+Vocal Fold,GQ_prc5_95
+Vocal Fold,GQ_std_cycle_open
+Vocal Fold,GQ_std_cycle_closed
+Vocal Fold,GNE_mean
+Vocal Fold,GNE_std
+Vocal Fold,GNE_SNR_TKEO
+Vocal Fold,GNE_SNR_SEO
+Vocal Fold,GNE_NSR_TKEO
+Vocal Fold,GNE_NSR_SEO
+Vocal Fold,VFER_mean
+Vocal Fold,VFER_std
+Vocal Fold,VFER_entropy
+Vocal Fold,VFER_SNR_TKEO
+Vocal Fold,VFER_SNR_SEO
+Vocal Fold,VFER_NSR_TKEO
+Vocal Fold,VFER_NSR_SEO
+Vocal Fold,IMF_SNR_SEO
+Vocal Fold,IMF_SNR_TKEO
+Vocal Fold,IMF_SNR_entropy
+Vocal Fold,IMF_NSR_SEO
+Vocal Fold,IMF_NSR_TKEO
+Vocal Fold,IMF_NSR_entropy
+MFCC,mean_Log_energy
+MFCC,mean_MFCC_0th_coef
+MFCC,mean_MFCC_1st_coef
+MFCC,mean_MFCC_2nd_coef
+MFCC,mean_MFCC_3rd_coef
+MFCC,mean_MFCC_4th_coef
+MFCC,mean_MFCC_5th_coef
+MFCC,mean_MFCC_6th_coef
+MFCC,mean_MFCC_7th_coef
+MFCC,mean_MFCC_8th_coef
+MFCC,mean_MFCC_9th_coef
+MFCC,mean_MFCC_10th_coef
+MFCC,mean_MFCC_11th_coef
+MFCC,mean_MFCC_12th_coef
+MFCC,mean_delta_log_energy
+MFCC,mean_0th_delta
+MFCC,mean_1st_delta
+MFCC,mean_2nd_delta
+MFCC,mean_3rd_delta
+MFCC,mean_4th_delta
+MFCC,mean_5th_delta
+MFCC,mean_6th_delta
+MFCC,mean_7th_delta
+MFCC,mean_8th_delta
+MFCC,mean_9th_delta
+MFCC,mean_10th_delta
+MFCC,mean_11th_delta
+MFCC,mean_12th_delta
+MFCC,mean_delta_delta_log_energy
+MFCC,mean_delta_delta_0th
+MFCC,mean_1st_delta_delta
+MFCC,mean_2nd_delta_delta
+MFCC,mean_3rd_delta_delta
+MFCC,mean_4th_delta_delta
+MFCC,mean_5th_delta_delta
+MFCC,mean_6th_delta_delta
+MFCC,mean_7th_delta_delta
+MFCC,mean_8th_delta_delta
+MFCC,mean_9th_delta_delta
+MFCC,mean_10th_delta_delta
+MFCC,mean_11th_delta_delta
+MFCC,mean_12th_delta_delta
+MFCC,std_Log_energy
+MFCC,std_MFCC_0th_coef
+MFCC,std_MFCC_1st_coef
+MFCC,std_MFCC_2nd_coef
+MFCC,std_MFCC_3rd_coef
+MFCC,std_MFCC_4th_coef
+MFCC,std_MFCC_5th_coef
+MFCC,std_MFCC_6th_coef
+MFCC,std_MFCC_7th_coef
+MFCC,std_MFCC_8th_coef
+MFCC,std_MFCC_9th_coef
+MFCC,std_MFCC_10th_coef
+MFCC,std_MFCC_11th_coef
+MFCC,std_MFCC_12th_coef
+MFCC,std_delta_log_energy
+MFCC,std_0th_delta
+MFCC,std_1st_delta
+MFCC,std_2nd_delta
+MFCC,std_3rd_delta
+MFCC,std_4th_delta
+MFCC,std_5th_delta
+MFCC,std_6th_delta
+MFCC,std_7th_delta
+MFCC,std_8th_delta
+MFCC,std_9th_delta
+MFCC,std_10th_delta
+MFCC,std_11th_delta
+MFCC,std_12th_delta
+MFCC,std_delta_delta_log_energy
+MFCC,std_delta_delta_0th
+MFCC,std_1st_delta_delta
+MFCC,std_2nd_delta_delta
+MFCC,std_3rd_delta_delta
+MFCC,std_4th_delta_delta
+MFCC,std_5th_delta_delta
+MFCC,std_6th_delta_delta
+MFCC,std_7th_delta_delta
+MFCC,std_8th_delta_delta
+MFCC,std_9th_delta_delta
+MFCC,std_10th_delta_delta
+MFCC,std_11th_delta_delta
+MFCC,std_12th_delta_delta
+Wavelet Features,Ea
+Wavelet Features,Ed_1_coef
+Wavelet Features,Ed_2_coef
+Wavelet Features,Ed_3_coef
+Wavelet Features,Ed_4_coef
+Wavelet Features,Ed_5_coef
+Wavelet Features,Ed_6_coef
+Wavelet Features,Ed_7_coef
+Wavelet Features,Ed_8_coef
+Wavelet Features,Ed_9_coef
+Wavelet Features,Ed_10_coef
+Wavelet Features,det_entropy_shannon_1_coef
+Wavelet Features,det_entropy_shannon_2_coef
+Wavelet Features,det_entropy_shannon_3_coef
+Wavelet Features,det_entropy_shannon_4_coef
+Wavelet Features,det_entropy_shannon_5_coef
+Wavelet Features,det_entropy_shannon_6_coef
+Wavelet Features,det_entropy_shannon_7_coef
+Wavelet Features,det_entropy_shannon_8_coef
+Wavelet Features,det_entropy_shannon_9_coef
+Wavelet Features,det_entropy_shannon_10_coef
+Wavelet Features,det_entropy_log_1_coef
+Wavelet Features,det_entropy_log_2_coef
+Wavelet Features,det_entropy_log_3_coef
+Wavelet Features,det_entropy_log_4_coef
+Wavelet Features,det_entropy_log_5_coef
+Wavelet Features,det_entropy_log_6_coef
+Wavelet Features,det_entropy_log_7_coef
+Wavelet Features,det_entropy_log_8_coef
+Wavelet Features,det_entropy_log_9_coef
+Wavelet Features,det_entropy_log_10_coef
+Wavelet Features,det_TKEO_mean_1_coef
+Wavelet Features,det_TKEO_mean_2_coef
+Wavelet Features,det_TKEO_mean_3_coef
+Wavelet Features,det_TKEO_mean_4_coef
+Wavelet Features,det_TKEO_mean_5_coef
+Wavelet Features,det_TKEO_mean_6_coef
+Wavelet Features,det_TKEO_mean_7_coef
+Wavelet Features,det_TKEO_mean_8_coef
+Wavelet Features,det_TKEO_mean_9_coef
+Wavelet Features,det_TKEO_mean_10_coef
+Wavelet Features,det_TKEO_std_1_coef
+Wavelet Features,det_TKEO_std_2_coef
+Wavelet Features,det_TKEO_std_3_coef
+Wavelet Features,det_TKEO_std_4_coef
+Wavelet Features,det_TKEO_std_5_coef
+Wavelet Features,det_TKEO_std_6_coef
+Wavelet Features,det_TKEO_std_7_coef
+Wavelet Features,det_TKEO_std_8_coef
+Wavelet Features,det_TKEO_std_9_coef
+Wavelet Features,det_TKEO_std_10_coef
+Wavelet Features,app_entropy_shannon_1_coef
+Wavelet Features,app_entropy_shannon_2_coef
+Wavelet Features,app_entropy_shannon_3_coef
+Wavelet Features,app_entropy_shannon_4_coef
+Wavelet Features,app_entropy_shannon_5_coef
+Wavelet Features,app_entropy_shannon_6_coef
+Wavelet Features,app_entropy_shannon_7_coef
+Wavelet Features,app_entropy_shannon_8_coef
+Wavelet Features,app_entropy_shannon_9_coef
+Wavelet Features,app_entropy_shannon_10_coef
+Wavelet Features,app_entropy_log_1_coef
+Wavelet Features,app_entropy_log_2_coef
+Wavelet Features,app_entropy_log_3_coef
+Wavelet Features,app_entropy_log_4_coef
+Wavelet Features,app_entropy_log_5_coef
+Wavelet Features,app_entropy_log_6_coef
+Wavelet Features,app_entropy_log_7_coef
+Wavelet Features,app_entropy_log_8_coef
+Wavelet Features,app_entropy_log_9_coef
+Wavelet Features,app_entropy_log_10_coef
+Wavelet Features,app_det_TKEO_mean_1_coef
+Wavelet Features,app_det_TKEO_mean_2_coef
+Wavelet Features,app_det_TKEO_mean_3_coef
+Wavelet Features,app_det_TKEO_mean_4_coef
+Wavelet Features,app_det_TKEO_mean_5_coef
+Wavelet Features,app_det_TKEO_mean_6_coef
+Wavelet Features,app_det_TKEO_mean_7_coef
+Wavelet Features,app_det_TKEO_mean_8_coef
+Wavelet Features,app_det_TKEO_mean_9_coef
+Wavelet Features,app_det_TKEO_mean_10_coef
+Wavelet Features,app_TKEO_std_1_coef
+Wavelet Features,app_TKEO_std_2_coef
+Wavelet Features,app_TKEO_std_3_coef
+Wavelet Features,app_TKEO_std_4_coef
+Wavelet Features,app_TKEO_std_5_coef
+Wavelet Features,app_TKEO_std_6_coef
+Wavelet Features,app_TKEO_std_7_coef
+Wavelet Features,app_TKEO_std_8_coef
+Wavelet Features,app_TKEO_std_9_coef
+Wavelet Features,app_TKEO_std_10_coef
+Wavelet Features,Ea2
+Wavelet Features,Ed2_1_coef
+Wavelet Features,Ed2_2_coef
+Wavelet Features,Ed2_3_coef
+Wavelet Features,Ed2_4_coef
+Wavelet Features,Ed2_5_coef
+Wavelet Features,Ed2_6_coef
+Wavelet Features,Ed2_7_coef
+Wavelet Features,Ed2_8_coef
+Wavelet Features,Ed2_9_coef
+Wavelet Features,Ed2_10_coef
+Wavelet Features,det_LT_entropy_shannon_1_coef
+Wavelet Features,det_LT_entropy_shannon_2_coef
+Wavelet Features,det_LT_entropy_shannon_3_coef
+Wavelet Features,det_LT_entropy_shannon_4_coef
+Wavelet Features,det_LT_entropy_shannon_5_coef
+Wavelet Features,det_LT_entropy_shannon_6_coef
+Wavelet Features,det_LT_entropy_shannon_7_coef
+Wavelet Features,det_LT_entropy_shannon_8_coef
+Wavelet Features,det_LT_entropy_shannon_9_coef
+Wavelet Features,det_LT_entropy_shannon_10_coef
+Wavelet Features,det_LT_entropy_log_1_coef
+Wavelet Features,det_LT_entropy_log_2_coef
+Wavelet Features,det_LT_entropy_log_3_coef
+Wavelet Features,det_LT_entropy_log_4_coef
+Wavelet Features,det_LT_entropy_log_5_coef
+Wavelet Features,det_LT_entropy_log_6_coef
+Wavelet Features,det_LT_entropy_log_7_coef
+Wavelet Features,det_LT_entropy_log_8_coef
+Wavelet Features,det_LT_entropy_log_9_coef
+Wavelet Features,det_LT_entropy_log_10_coef
+Wavelet Features,det_LT_TKEO_mean_1_coef
+Wavelet Features,det_LT_TKEO_mean_2_coef
+Wavelet Features,det_LT_TKEO_mean_3_coef
+Wavelet Features,det_LT_TKEO_mean_4_coef
+Wavelet Features,det_LT_TKEO_mean_5_coef
+Wavelet Features,det_LT_TKEO_mean_6_coef
+Wavelet Features,det_LT_TKEO_mean_7_coef
+Wavelet Features,det_LT_TKEO_mean_8_coef
+Wavelet Features,det_LT_TKEO_mean_9_coef
+Wavelet Features,det_LT_TKEO_mean_10_coef
+Wavelet Features,det_LT_TKEO_std_1_coef
+Wavelet Features,det_LT_TKEO_std_2_coef
+Wavelet Features,det_LT_TKEO_std_3_coef
+Wavelet Features,det_LT_TKEO_std_4_coef
+Wavelet Features,det_LT_TKEO_std_5_coef
+Wavelet Features,det_LT_TKEO_std_6_coef
+Wavelet Features,det_LT_TKEO_std_7_coef
+Wavelet Features,det_LT_TKEO_std_8_coef
+Wavelet Features,det_LT_TKEO_std_9_coef
+Wavelet Features,det_LT_TKEO_std_10_coef
+Wavelet Features,app_LT_entropy_shannon_1_coef
+Wavelet Features,app_LT_entropy_shannon_2_coef
+Wavelet Features,app_LT_entropy_shannon_3_coef
+Wavelet Features,app_LT_entropy_shannon_4_coef
+Wavelet Features,app_LT_entropy_shannon_5_coef
+Wavelet Features,app_LT_entropy_shannon_6_coef
+Wavelet Features,app_LT_entropy_shannon_7_coef
+Wavelet Features,app_LT_entropy_shannon_8_coef
+Wavelet Features,app_LT_entropy_shannon_9_coef
+Wavelet Features,app_LT_entropy_shannon_10_coef
+Wavelet Features,app_LT_entropy_log_1_coef
+Wavelet Features,app_LT_entropy_log_2_coef
+Wavelet Features,app_LT_entropy_log_3_coef
+Wavelet Features,app_LT_entropy_log_4_coef
+Wavelet Features,app_LT_entropy_log_5_coef
+Wavelet Features,app_LT_entropy_log_6_coef
+Wavelet Features,app_LT_entropy_log_7_coef
+Wavelet Features,app_LT_entropy_log_8_coef
+Wavelet Features,app_LT_entropy_log_9_coef
+Wavelet Features,app_LT_entropy_log_10_coef
+Wavelet Features,app_LT_TKEO_mean_1_coef
+Wavelet Features,app_LT_TKEO_mean_2_coef
+Wavelet Features,app_LT_TKEO_mean_3_coef
+Wavelet Features,app_LT_TKEO_mean_4_coef
+Wavelet Features,app_LT_TKEO_mean_5_coef
+Wavelet Features,app_LT_TKEO_mean_6_coef
+Wavelet Features,app_LT_TKEO_mean_7_coef
+Wavelet Features,app_LT_TKEO_mean_8_coef
+Wavelet Features,app_LT_TKEO_mean_9_coef
+Wavelet Features,app_LT_TKEO_mean_10_coef
+Wavelet Features,app_LT_TKEO_std_1_coef
+Wavelet Features,app_LT_TKEO_std_2_coef
+Wavelet Features,app_LT_TKEO_std_3_coef
+Wavelet Features,app_LT_TKEO_std_4_coef
+Wavelet Features,app_LT_TKEO_std_5_coef
+Wavelet Features,app_LT_TKEO_std_6_coef
+Wavelet Features,app_LT_TKEO_std_7_coef
+Wavelet Features,app_LT_TKEO_std_8_coef
+Wavelet Features,app_LT_TKEO_std_9_coef
+Wavelet Features,app_LT_TKEO_std_10_coef
+TQWT Features,tqwt_energy_dec_1
+TQWT Features,tqwt_energy_dec_2
+TQWT Features,tqwt_energy_dec_3
+TQWT Features,tqwt_energy_dec_4
+TQWT Features,tqwt_energy_dec_5
+TQWT Features,tqwt_energy_dec_6
+TQWT Features,tqwt_energy_dec_7
+TQWT Features,tqwt_energy_dec_8
+TQWT Features,tqwt_energy_dec_9
+TQWT Features,tqwt_energy_dec_10
+TQWT Features,tqwt_energy_dec_11
+TQWT Features,tqwt_energy_dec_12
+TQWT Features,tqwt_energy_dec_13
+TQWT Features,tqwt_energy_dec_14
+TQWT Features,tqwt_energy_dec_15
+TQWT Features,tqwt_energy_dec_16
+TQWT Features,tqwt_energy_dec_17
+TQWT Features,tqwt_energy_dec_18
+TQWT Features,tqwt_energy_dec_19
+TQWT Features,tqwt_energy_dec_20
+TQWT Features,tqwt_energy_dec_21
+TQWT Features,tqwt_energy_dec_22
+TQWT Features,tqwt_energy_dec_23
+TQWT Features,tqwt_energy_dec_24
+TQWT Features,tqwt_energy_dec_25
+TQWT Features,tqwt_energy_dec_26
+TQWT Features,tqwt_energy_dec_27
+TQWT Features,tqwt_energy_dec_28
+TQWT Features,tqwt_energy_dec_29
+TQWT Features,tqwt_energy_dec_30
+TQWT Features,tqwt_energy_dec_31
+TQWT Features,tqwt_energy_dec_32
+TQWT Features,tqwt_energy_dec_33
+TQWT Features,tqwt_energy_dec_34
+TQWT Features,tqwt_energy_dec_35
+TQWT Features,tqwt_energy_dec_36
+TQWT Features,tqwt_entropy_shannon_dec_1
+TQWT Features,tqwt_entropy_shannon_dec_2
+TQWT Features,tqwt_entropy_shannon_dec_3
+TQWT Features,tqwt_entropy_shannon_dec_4
+TQWT Features,tqwt_entropy_shannon_dec_5
+TQWT Features,tqwt_entropy_shannon_dec_6
+TQWT Features,tqwt_entropy_shannon_dec_7
+TQWT Features,tqwt_entropy_shannon_dec_8
+TQWT Features,tqwt_entropy_shannon_dec_9
+TQWT Features,tqwt_entropy_shannon_dec_10
+TQWT Features,tqwt_entropy_shannon_dec_11
+TQWT Features,tqwt_entropy_shannon_dec_12
+TQWT Features,tqwt_entropy_shannon_dec_13
+TQWT Features,tqwt_entropy_shannon_dec_14
+TQWT Features,tqwt_entropy_shannon_dec_15
+TQWT Features,tqwt_entropy_shannon_dec_16
+TQWT Features,tqwt_entropy_shannon_dec_17
+TQWT Features,tqwt_entropy_shannon_dec_18
+TQWT Features,tqwt_entropy_shannon_dec_19
+TQWT Features,tqwt_entropy_shannon_dec_20
+TQWT Features,tqwt_entropy_shannon_dec_21
+TQWT Features,tqwt_entropy_shannon_dec_22
+TQWT Features,tqwt_entropy_shannon_dec_23
+TQWT Features,tqwt_entropy_shannon_dec_24
+TQWT Features,tqwt_entropy_shannon_dec_25
+TQWT Features,tqwt_entropy_shannon_dec_26
+TQWT Features,tqwt_entropy_shannon_dec_27
+TQWT Features,tqwt_entropy_shannon_dec_28
+TQWT Features,tqwt_entropy_shannon_dec_29
+TQWT Features,tqwt_entropy_shannon_dec_30
+TQWT Features,tqwt_entropy_shannon_dec_31
+TQWT Features,tqwt_entropy_shannon_dec_32
+TQWT Features,tqwt_entropy_shannon_dec_33
+TQWT Features,tqwt_entropy_shannon_dec_34
+TQWT Features,tqwt_entropy_shannon_dec_35
+TQWT Features,tqwt_entropy_shannon_dec_36
+TQWT Features,tqwt_entropy_log_dec_1
+TQWT Features,tqwt_entropy_log_dec_2
+TQWT Features,tqwt_entropy_log_dec_3
+TQWT Features,tqwt_entropy_log_dec_4
+TQWT Features,tqwt_entropy_log_dec_5
+TQWT Features,tqwt_entropy_log_dec_6
+TQWT Features,tqwt_entropy_log_dec_7
+TQWT Features,tqwt_entropy_log_dec_8
+TQWT Features,tqwt_entropy_log_dec_9
+TQWT Features,tqwt_entropy_log_dec_10
+TQWT Features,tqwt_entropy_log_dec_11
+TQWT Features,tqwt_entropy_log_dec_12
+TQWT Features,tqwt_entropy_log_dec_13
+TQWT Features,tqwt_entropy_log_dec_14
+TQWT Features,tqwt_entropy_log_dec_15
+TQWT Features,tqwt_entropy_log_dec_16
+TQWT Features,tqwt_entropy_log_dec_17
+TQWT Features,tqwt_entropy_log_dec_18
+TQWT Features,tqwt_entropy_log_dec_19
+TQWT Features,tqwt_entropy_log_dec_20
+TQWT Features,tqwt_entropy_log_dec_21
+TQWT Features,tqwt_entropy_log_dec_22
+TQWT Features,tqwt_entropy_log_dec_23
+TQWT Features,tqwt_entropy_log_dec_24
+TQWT Features,tqwt_entropy_log_dec_25
+TQWT Features,tqwt_entropy_log_dec_26
+TQWT Features,tqwt_entropy_log_dec_27
+TQWT Features,tqwt_entropy_log_dec_28
+TQWT Features,tqwt_entropy_log_dec_29
+TQWT Features,tqwt_entropy_log_dec_30
+TQWT Features,tqwt_entropy_log_dec_31
+TQWT Features,tqwt_entropy_log_dec_32
+TQWT Features,tqwt_entropy_log_dec_33
+TQWT Features,tqwt_entropy_log_dec_34
+TQWT Features,tqwt_entropy_log_dec_35
+TQWT Features,tqwt_entropy_log_dec_36
+TQWT Features,tqwt_TKEO_mean_dec_1
+TQWT Features,tqwt_TKEO_mean_dec_2
+TQWT Features,tqwt_TKEO_mean_dec_3
+TQWT Features,tqwt_TKEO_mean_dec_4
+TQWT Features,tqwt_TKEO_mean_dec_5
+TQWT Features,tqwt_TKEO_mean_dec_6
+TQWT Features,tqwt_TKEO_mean_dec_7
+TQWT Features,tqwt_TKEO_mean_dec_8
+TQWT Features,tqwt_TKEO_mean_dec_9
+TQWT Features,tqwt_TKEO_mean_dec_10
+TQWT Features,tqwt_TKEO_mean_dec_11
+TQWT Features,tqwt_TKEO_mean_dec_12
+TQWT Features,tqwt_TKEO_mean_dec_13
+TQWT Features,tqwt_TKEO_mean_dec_14
+TQWT Features,tqwt_TKEO_mean_dec_15
+TQWT Features,tqwt_TKEO_mean_dec_16
+TQWT Features,tqwt_TKEO_mean_dec_17
+TQWT Features,tqwt_TKEO_mean_dec_18
+TQWT Features,tqwt_TKEO_mean_dec_19
+TQWT Features,tqwt_TKEO_mean_dec_20
+TQWT Features,tqwt_TKEO_mean_dec_21
+TQWT Features,tqwt_TKEO_mean_dec_22
+TQWT Features,tqwt_TKEO_mean_dec_23
+TQWT Features,tqwt_TKEO_mean_dec_24
+TQWT Features,tqwt_TKEO_mean_dec_25
+TQWT Features,tqwt_TKEO_mean_dec_26
+TQWT Features,tqwt_TKEO_mean_dec_27
+TQWT Features,tqwt_TKEO_mean_dec_28
+TQWT Features,tqwt_TKEO_mean_dec_29
+TQWT Features,tqwt_TKEO_mean_dec_30
+TQWT Features,tqwt_TKEO_mean_dec_31
+TQWT Features,tqwt_TKEO_mean_dec_32
+TQWT Features,tqwt_TKEO_mean_dec_33
+TQWT Features,tqwt_TKEO_mean_dec_34
+TQWT Features,tqwt_TKEO_mean_dec_35
+TQWT Features,tqwt_TKEO_mean_dec_36
+TQWT Features,tqwt_TKEO_std_dec_1
+TQWT Features,tqwt_TKEO_std_dec_2
+TQWT Features,tqwt_TKEO_std_dec_3
+TQWT Features,tqwt_TKEO_std_dec_4
+TQWT Features,tqwt_TKEO_std_dec_5
+TQWT Features,tqwt_TKEO_std_dec_6
+TQWT Features,tqwt_TKEO_std_dec_7
+TQWT Features,tqwt_TKEO_std_dec_8
+TQWT Features,tqwt_TKEO_std_dec_9
+TQWT Features,tqwt_TKEO_std_dec_10
+TQWT Features,tqwt_TKEO_std_dec_11
+TQWT Features,tqwt_TKEO_std_dec_12
+TQWT Features,tqwt_TKEO_std_dec_13
+TQWT Features,tqwt_TKEO_std_dec_14
+TQWT Features,tqwt_TKEO_std_dec_15
+TQWT Features,tqwt_TKEO_std_dec_16
+TQWT Features,tqwt_TKEO_std_dec_17
+TQWT Features,tqwt_TKEO_std_dec_18
+TQWT Features,tqwt_TKEO_std_dec_19
+TQWT Features,tqwt_TKEO_std_dec_20
+TQWT Features,tqwt_TKEO_std_dec_21
+TQWT Features,tqwt_TKEO_std_dec_22
+TQWT Features,tqwt_TKEO_std_dec_23
+TQWT Features,tqwt_TKEO_std_dec_24
+TQWT Features,tqwt_TKEO_std_dec_25
+TQWT Features,tqwt_TKEO_std_dec_26
+TQWT Features,tqwt_TKEO_std_dec_27
+TQWT Features,tqwt_TKEO_std_dec_28
+TQWT Features,tqwt_TKEO_std_dec_29
+TQWT Features,tqwt_TKEO_std_dec_30
+TQWT Features,tqwt_TKEO_std_dec_31
+TQWT Features,tqwt_TKEO_std_dec_32
+TQWT Features,tqwt_TKEO_std_dec_33
+TQWT Features,tqwt_TKEO_std_dec_34
+TQWT Features,tqwt_TKEO_std_dec_35
+TQWT Features,tqwt_TKEO_std_dec_36
+TQWT Features,tqwt_medianValue_dec_1
+TQWT Features,tqwt_medianValue_dec_2
+TQWT Features,tqwt_medianValue_dec_3
+TQWT Features,tqwt_medianValue_dec_4
+TQWT Features,tqwt_medianValue_dec_5
+TQWT Features,tqwt_medianValue_dec_6
+TQWT Features,tqwt_medianValue_dec_7
+TQWT Features,tqwt_medianValue_dec_8
+TQWT Features,tqwt_medianValue_dec_9
+TQWT Features,tqwt_medianValue_dec_10
+TQWT Features,tqwt_medianValue_dec_11
+TQWT Features,tqwt_medianValue_dec_12
+TQWT Features,tqwt_medianValue_dec_13
+TQWT Features,tqwt_medianValue_dec_14
+TQWT Features,tqwt_medianValue_dec_15
+TQWT Features,tqwt_medianValue_dec_16
+TQWT Features,tqwt_medianValue_dec_17
+TQWT Features,tqwt_medianValue_dec_18
+TQWT Features,tqwt_medianValue_dec_19
+TQWT Features,tqwt_medianValue_dec_20
+TQWT Features,tqwt_medianValue_dec_21
+TQWT Features,tqwt_medianValue_dec_22
+TQWT Features,tqwt_medianValue_dec_23
+TQWT Features,tqwt_medianValue_dec_24
+TQWT Features,tqwt_medianValue_dec_25
+TQWT Features,tqwt_medianValue_dec_26
+TQWT Features,tqwt_medianValue_dec_27
+TQWT Features,tqwt_medianValue_dec_28
+TQWT Features,tqwt_medianValue_dec_29
+TQWT Features,tqwt_medianValue_dec_30
+TQWT Features,tqwt_medianValue_dec_31
+TQWT Features,tqwt_medianValue_dec_32
+TQWT Features,tqwt_medianValue_dec_33
+TQWT Features,tqwt_medianValue_dec_34
+TQWT Features,tqwt_medianValue_dec_35
+TQWT Features,tqwt_medianValue_dec_36
+TQWT Features,tqwt_meanValue_dec_1
+TQWT Features,tqwt_meanValue_dec_2
+TQWT Features,tqwt_meanValue_dec_3
+TQWT Features,tqwt_meanValue_dec_4
+TQWT Features,tqwt_meanValue_dec_5
+TQWT Features,tqwt_meanValue_dec_6
+TQWT Features,tqwt_meanValue_dec_7
+TQWT Features,tqwt_meanValue_dec_8
+TQWT Features,tqwt_meanValue_dec_9
+TQWT Features,tqwt_meanValue_dec_10
+TQWT Features,tqwt_meanValue_dec_11
+TQWT Features,tqwt_meanValue_dec_12
+TQWT Features,tqwt_meanValue_dec_13
+TQWT Features,tqwt_meanValue_dec_14
+TQWT Features,tqwt_meanValue_dec_15
+TQWT Features,tqwt_meanValue_dec_16
+TQWT Features,tqwt_meanValue_dec_17
+TQWT Features,tqwt_meanValue_dec_18
+TQWT Features,tqwt_meanValue_dec_19
+TQWT Features,tqwt_meanValue_dec_20
+TQWT Features,tqwt_meanValue_dec_21
+TQWT Features,tqwt_meanValue_dec_22
+TQWT Features,tqwt_meanValue_dec_23
+TQWT Features,tqwt_meanValue_dec_24
+TQWT Features,tqwt_meanValue_dec_25
+TQWT Features,tqwt_meanValue_dec_26
+TQWT Features,tqwt_meanValue_dec_27
+TQWT Features,tqwt_meanValue_dec_28
+TQWT Features,tqwt_meanValue_dec_29
+TQWT Features,tqwt_meanValue_dec_30
+TQWT Features,tqwt_meanValue_dec_31
+TQWT Features,tqwt_meanValue_dec_32
+TQWT Features,tqwt_meanValue_dec_33
+TQWT Features,tqwt_meanValue_dec_34
+TQWT Features,tqwt_meanValue_dec_35
+TQWT Features,tqwt_meanValue_dec_36
+TQWT Features,tqwt_stdValue_dec_1
+TQWT Features,tqwt_stdValue_dec_2
+TQWT Features,tqwt_stdValue_dec_3
+TQWT Features,tqwt_stdValue_dec_4
+TQWT Features,tqwt_stdValue_dec_5
+TQWT Features,tqwt_stdValue_dec_6
+TQWT Features,tqwt_stdValue_dec_7
+TQWT Features,tqwt_stdValue_dec_8
+TQWT Features,tqwt_stdValue_dec_9
+TQWT Features,tqwt_stdValue_dec_10
+TQWT Features,tqwt_stdValue_dec_11
+TQWT Features,tqwt_stdValue_dec_12
+TQWT Features,tqwt_stdValue_dec_13
+TQWT Features,tqwt_stdValue_dec_14
+TQWT Features,tqwt_stdValue_dec_15
+TQWT Features,tqwt_stdValue_dec_16
+TQWT Features,tqwt_stdValue_dec_17
+TQWT Features,tqwt_stdValue_dec_18
+TQWT Features,tqwt_stdValue_dec_19
+TQWT Features,tqwt_stdValue_dec_20
+TQWT Features,tqwt_stdValue_dec_21
+TQWT Features,tqwt_stdValue_dec_22
+TQWT Features,tqwt_stdValue_dec_23
+TQWT Features,tqwt_stdValue_dec_24
+TQWT Features,tqwt_stdValue_dec_25
+TQWT Features,tqwt_stdValue_dec_26
+TQWT Features,tqwt_stdValue_dec_27
+TQWT Features,tqwt_stdValue_dec_28
+TQWT Features,tqwt_stdValue_dec_29
+TQWT Features,tqwt_stdValue_dec_30
+TQWT Features,tqwt_stdValue_dec_31
+TQWT Features,tqwt_stdValue_dec_32
+TQWT Features,tqwt_stdValue_dec_33
+TQWT Features,tqwt_stdValue_dec_34
+TQWT Features,tqwt_stdValue_dec_35
+TQWT Features,tqwt_stdValue_dec_36
+TQWT Features,tqwt_minValue_dec_1
+TQWT Features,tqwt_minValue_dec_2
+TQWT Features,tqwt_minValue_dec_3
+TQWT Features,tqwt_minValue_dec_4
+TQWT Features,tqwt_minValue_dec_5
+TQWT Features,tqwt_minValue_dec_6
+TQWT Features,tqwt_minValue_dec_7
+TQWT Features,tqwt_minValue_dec_8
+TQWT Features,tqwt_minValue_dec_9
+TQWT Features,tqwt_minValue_dec_10
+TQWT Features,tqwt_minValue_dec_11
+TQWT Features,tqwt_minValue_dec_12
+TQWT Features,tqwt_minValue_dec_13
+TQWT Features,tqwt_minValue_dec_14
+TQWT Features,tqwt_minValue_dec_15
+TQWT Features,tqwt_minValue_dec_16
+TQWT Features,tqwt_minValue_dec_17
+TQWT Features,tqwt_minValue_dec_18
+TQWT Features,tqwt_minValue_dec_19
+TQWT Features,tqwt_minValue_dec_20
+TQWT Features,tqwt_minValue_dec_21
+TQWT Features,tqwt_minValue_dec_22
+TQWT Features,tqwt_minValue_dec_23
+TQWT Features,tqwt_minValue_dec_24
+TQWT Features,tqwt_minValue_dec_25
+TQWT Features,tqwt_minValue_dec_26
+TQWT Features,tqwt_minValue_dec_27
+TQWT Features,tqwt_minValue_dec_28
+TQWT Features,tqwt_minValue_dec_29
+TQWT Features,tqwt_minValue_dec_30
+TQWT Features,tqwt_minValue_dec_31
+TQWT Features,tqwt_minValue_dec_32
+TQWT Features,tqwt_minValue_dec_33
+TQWT Features,tqwt_minValue_dec_34
+TQWT Features,tqwt_minValue_dec_35
+TQWT Features,tqwt_minValue_dec_36
+TQWT Features,tqwt_maxValue_dec_1
+TQWT Features,tqwt_maxValue_dec_2
+TQWT Features,tqwt_maxValue_dec_3
+TQWT Features,tqwt_maxValue_dec_4
+TQWT Features,tqwt_maxValue_dec_5
+TQWT Features,tqwt_maxValue_dec_6
+TQWT Features,tqwt_maxValue_dec_7
+TQWT Features,tqwt_maxValue_dec_8
+TQWT Features,tqwt_maxValue_dec_9
+TQWT Features,tqwt_maxValue_dec_10
+TQWT Features,tqwt_maxValue_dec_11
+TQWT Features,tqwt_maxValue_dec_12
+TQWT Features,tqwt_maxValue_dec_13
+TQWT Features,tqwt_maxValue_dec_14
+TQWT Features,tqwt_maxValue_dec_15
+TQWT Features,tqwt_maxValue_dec_16
+TQWT Features,tqwt_maxValue_dec_17
+TQWT Features,tqwt_maxValue_dec_18
+TQWT Features,tqwt_maxValue_dec_19
+TQWT Features,tqwt_maxValue_dec_20
+TQWT Features,tqwt_maxValue_dec_21
+TQWT Features,tqwt_maxValue_dec_22
+TQWT Features,tqwt_maxValue_dec_23
+TQWT Features,tqwt_maxValue_dec_24
+TQWT Features,tqwt_maxValue_dec_25
+TQWT Features,tqwt_maxValue_dec_26
+TQWT Features,tqwt_maxValue_dec_27
+TQWT Features,tqwt_maxValue_dec_28
+TQWT Features,tqwt_maxValue_dec_29
+TQWT Features,tqwt_maxValue_dec_30
+TQWT Features,tqwt_maxValue_dec_31
+TQWT Features,tqwt_maxValue_dec_32
+TQWT Features,tqwt_maxValue_dec_33
+TQWT Features,tqwt_maxValue_dec_34
+TQWT Features,tqwt_maxValue_dec_35
+TQWT Features,tqwt_maxValue_dec_36
+TQWT Features,tqwt_skewnessValue_dec_1
+TQWT Features,tqwt_skewnessValue_dec_2
+TQWT Features,tqwt_skewnessValue_dec_3
+TQWT Features,tqwt_skewnessValue_dec_4
+TQWT Features,tqwt_skewnessValue_dec_5
+TQWT Features,tqwt_skewnessValue_dec_6
+TQWT Features,tqwt_skewnessValue_dec_7
+TQWT Features,tqwt_skewnessValue_dec_8
+TQWT Features,tqwt_skewnessValue_dec_9
+TQWT Features,tqwt_skewnessValue_dec_10
+TQWT Features,tqwt_skewnessValue_dec_11
+TQWT Features,tqwt_skewnessValue_dec_12
+TQWT Features,tqwt_skewnessValue_dec_13
+TQWT Features,tqwt_skewnessValue_dec_14
+TQWT Features,tqwt_skewnessValue_dec_15
+TQWT Features,tqwt_skewnessValue_dec_16
+TQWT Features,tqwt_skewnessValue_dec_17
+TQWT Features,tqwt_skewnessValue_dec_18
+TQWT Features,tqwt_skewnessValue_dec_19
+TQWT Features,tqwt_skewnessValue_dec_20
+TQWT Features,tqwt_skewnessValue_dec_21
+TQWT Features,tqwt_skewnessValue_dec_22
+TQWT Features,tqwt_skewnessValue_dec_23
+TQWT Features,tqwt_skewnessValue_dec_24
+TQWT Features,tqwt_skewnessValue_dec_25
+TQWT Features,tqwt_skewnessValue_dec_26
+TQWT Features,tqwt_skewnessValue_dec_27
+TQWT Features,tqwt_skewnessValue_dec_28
+TQWT Features,tqwt_skewnessValue_dec_29
+TQWT Features,tqwt_skewnessValue_dec_30
+TQWT Features,tqwt_skewnessValue_dec_31
+TQWT Features,tqwt_skewnessValue_dec_32
+TQWT Features,tqwt_skewnessValue_dec_33
+TQWT Features,tqwt_skewnessValue_dec_34
+TQWT Features,tqwt_skewnessValue_dec_35
+TQWT Features,tqwt_skewnessValue_dec_36
+TQWT Features,tqwt_kurtosisValue_dec_1
+TQWT Features,tqwt_kurtosisValue_dec_2
+TQWT Features,tqwt_kurtosisValue_dec_3
+TQWT Features,tqwt_kurtosisValue_dec_4
+TQWT Features,tqwt_kurtosisValue_dec_5
+TQWT Features,tqwt_kurtosisValue_dec_6
+TQWT Features,tqwt_kurtosisValue_dec_7
+TQWT Features,tqwt_kurtosisValue_dec_8
+TQWT Features,tqwt_kurtosisValue_dec_9
+TQWT Features,tqwt_kurtosisValue_dec_10
+TQWT Features,tqwt_kurtosisValue_dec_11
+TQWT Features,tqwt_kurtosisValue_dec_12
+TQWT Features,tqwt_kurtosisValue_dec_13
+TQWT Features,tqwt_kurtosisValue_dec_14
+TQWT Features,tqwt_kurtosisValue_dec_15
+TQWT Features,tqwt_kurtosisValue_dec_16
+TQWT Features,tqwt_kurtosisValue_dec_17
+TQWT Features,tqwt_kurtosisValue_dec_18
+TQWT Features,tqwt_kurtosisValue_dec_19
+TQWT Features,tqwt_kurtosisValue_dec_20
+TQWT Features,tqwt_kurtosisValue_dec_21
+TQWT Features,tqwt_kurtosisValue_dec_22
+TQWT Features,tqwt_kurtosisValue_dec_23
+TQWT Features,tqwt_kurtosisValue_dec_24
+TQWT Features,tqwt_kurtosisValue_dec_25
+TQWT Features,tqwt_kurtosisValue_dec_26
+TQWT Features,tqwt_kurtosisValue_dec_27
+TQWT Features,tqwt_kurtosisValue_dec_28
+TQWT Features,tqwt_kurtosisValue_dec_29
+TQWT Features,tqwt_kurtosisValue_dec_30
+TQWT Features,tqwt_kurtosisValue_dec_31
+TQWT Features,tqwt_kurtosisValue_dec_32
+TQWT Features,tqwt_kurtosisValue_dec_33
+TQWT Features,tqwt_kurtosisValue_dec_34
+TQWT Features,tqwt_kurtosisValue_dec_35
+TQWT Features,tqwt_kurtosisValue_dec_36
+Class,class
