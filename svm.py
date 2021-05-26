@@ -1,10 +1,7 @@
-from sklearn.model_selection import train_test_split
 from sklearn import svm
 from sklearn import metrics
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import KFold
 from sklearn.model_selection import GridSearchCV
-
+import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -28,14 +25,18 @@ param_grid = { 'C':[0.1,1,100,1000],
               'degree':[1,2,3,4,5,6],
               'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
 
-kfold = KFold(n_splits=10, shuffle=True, random_state=450)
+with open("data/split_details.json", 'r', encoding='utf8') as f:
+    split_detail = json.load(f)
+
+k_fold = 10
 
 accuracy = []
 precision = []
 recall = []
-for train_indexes, test_indexes in kfold.split(data):
-    X_train, y_train = features[train_indexes], labels[train_indexes]
-    X_test, y_test = features[test_indexes], labels[test_indexes]
+
+for i in range(1, k_fold + 1):
+    X_train, y_train = features[split_detail[f'train_{i}']], labels[split_detail[f'train_{i}']]
+    X_test, y_test = features[split_detail[f'val_{i}']], labels[split_detail[f'val_{i}']]
     clf = svm.SVC()
     grid = GridSearchCV(clf, param_grid, n_jobs=12, cv=5, scoring='accuracy', verbose=1)
     grid.fit(X_train, y_train)

@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -102,7 +103,6 @@ def train(model, train_data, val_data):
                     Train Accuracy: {round(train_accuracy, 8)}")
             print(f"Metrics for Epoch {epoch}: val Loss:{round(val_loss, 8)} \
                     Val Accuracy: {round(val_accuracy, 8)}")
-            print()
 
     writer.flush()
     writer.close()
@@ -122,20 +122,28 @@ if __name__ == '__main__':
                                           transform=transforms.Compose([ToTensorGroup()]))
 
     k_fold = 10
-    kfold = KFold(n_splits=k_fold, shuffle=True, random_state=450)
     model_histories = []
-    i = 0
-    for train_indices, val_indices in kfold.split(parkinson_dataset):
-        i+=1
+
+    with open("data/split_details.json", 'r', encoding='utf8') as f:
+        split_detail = json.load(f)
+
+    for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
-        train_set = torch.utils.data.dataset.Subset(parkinson_dataset, train_indices)
-        val_set = torch.utils.data.dataset.Subset(parkinson_dataset, val_indices)
+        train_set = torch.utils.data.dataset.Subset(parkinson_dataset, split_detail[f'train_{i}'])
+        val_set = torch.utils.data.dataset.Subset(parkinson_dataset, split_detail[f'val_{i}'])
 
         train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
         val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=True)
 
-        tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-                               dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
+        # tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        #                        dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
+
+        # tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        #                        dropout=config.DROPOUT, feature_length=753)
+
+        tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+                                    dropout=config.DROPOUT, feature_length=753)
+
         history = train(tf_model, train_dataloader, val_dataloader)
 
         print(history)
@@ -143,5 +151,3 @@ if __name__ == '__main__':
 
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
     print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
-
-# 0.9087192982456139
