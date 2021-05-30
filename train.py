@@ -17,7 +17,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("using device : ", device)
 
 
-def train(model, train_data, val_data):
+def train(model, train_data, val_data, id=None):
 
     model = model.to(device)
     writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
@@ -34,6 +34,8 @@ def train(model, train_data, val_data):
     val_accuracy_history = []
     val_precision_history = []
     val_recall_history = []
+
+    max_val_accuracy = 0
 
     sample_data = train_data.__iter__().next()
     features = sample_data['features']
@@ -131,6 +133,14 @@ def train(model, train_data, val_data):
                     Val Accuracy: {round(val_accuracy, 8)} Val Precision: {round(val_precision, 8)} \
                     Val Recall: {round(val_recall, 8)}")
 
+            if val_accuracy > max_val_accuracy:
+                print("Saving model ....")
+                max_val_accuracy = val_accuracy
+                model_content = {'epoch': epoch, 'model_state_dict': model.state_dict(),
+                                 'optimizer_state_dict': optimizer.state_dict(),
+                                 'val_acc': val_accuracy, 'train_acc': train_accuracy}
+                torch.save(model_content, config.MODEL_DIR / f"model_k_fold_{id}.pt")
+
     writer.flush()
     writer.close()
     return {
@@ -164,7 +174,7 @@ if __name__ == '__main__':
         val_set = torch.utils.data.dataset.Subset(parkinson_dataset, split_detail[f'val_{i}'])
 
         train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
-        val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=False)
+        val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=True)
 
         # tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
         #                        dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
@@ -175,8 +185,7 @@ if __name__ == '__main__':
         tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
                                     dropout=config.DROPOUT, feature_length=753)
 
-        history = train(tf_model, train_dataloader, val_dataloader)
-
+        history = train(tf_model, train_dataloader, val_dataloader, id=i)
         print(history)
         model_histories.append(history)
 
