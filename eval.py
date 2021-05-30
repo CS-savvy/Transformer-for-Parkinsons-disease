@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup
@@ -20,6 +21,7 @@ def evaluate(model_dir, data, split_details=None):
 
     best_model = None
     max_val_accuracy = 0
+    results = []
     for i in range(1, 11):
         model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
                     dropout=config.DROPOUT, feature_length=753)
@@ -48,7 +50,6 @@ def evaluate(model_dir, data, split_details=None):
                 y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
                 y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
                 all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
-
                 accuracy = torch.sum(preds == labels).item() / len(val_indices)
                 precision = metrics.precision_score(y_labels, y_preds)
                 recall = metrics.recall_score(y_labels, y_preds)
@@ -57,6 +58,8 @@ def evaluate(model_dir, data, split_details=None):
                 if accuracy > max_val_accuracy:
                     max_val_accuracy = accuracy
                     best_model = i
+
+        results.extend([(u, l, p) for u, l, p in zip(all_uids, y_labels, y_preds)])
 
     print(f"Best Model: {best_model} having accuracy {max_val_accuracy}")
     test_indices = split_details['test']
@@ -87,7 +90,10 @@ def evaluate(model_dir, data, split_details=None):
             precision = metrics.precision_score(y_labels, y_preds)
             recall = metrics.recall_score(y_labels, y_preds)
             print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall}")
-
+        results.extend([(u, l, p) for u, l, p in zip(all_uids, y_labels, y_preds)])
+    results = sorted(results, key=lambda x: x[0])
+    result_df = pd.DataFrame(results, columns=["UID", 'True Label', 'Prediction'])
+    result_df.to_csv(config.MODEL_DIR / f"eval_result.csv", index=False)
 
 if __name__ == "__main__":
 
