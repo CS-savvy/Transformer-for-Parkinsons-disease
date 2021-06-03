@@ -1,16 +1,20 @@
 import json
 import numpy as np
 import torch
+
+torch.manual_seed(450)
+
 from torch.utils.data import DataLoader
-from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup
+from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup, DeepMLP, ConvModel
 from DataLoader import ParkinsonsDataset, ToTensor
 from sklearn import metrics
 import torch.nn as nn
-from focal_loss.focal_loss import FocalLoss
+from network.FocalLoss import FocalLoss
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.nn.functional as F
 import config
+from pathlib import Path
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -20,11 +24,10 @@ print("using device : ", device)
 def train(model, train_data, val_data, id=None):
 
     model = model.to(device)
-    writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
-    criterion = nn.BCEWithLogitsLoss()
-    # criterion = FocalLoss(alpha=2, gamma=5)
+    # criterion = nn.BCEWithLogitsLoss()
+    criterion = FocalLoss(alpha=1, gamma=3, logits=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR)
-
+    # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     train_loss_history = []
     train_accuracy_history = []
     train_precision_history = []
@@ -37,10 +40,11 @@ def train(model, train_data, val_data, id=None):
 
     max_val_accuracy = 0
 
-    sample_data = train_data.__iter__().next()
-    features = sample_data['features']
-    features = features.to(device)
-    writer.add_graph(model, input_to_model=features)
+    # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
+    # sample_data = train_data.__iter__().next()
+    # features = sample_data['features']
+    # features = features.to(device)
+    # writer.add_graph(model, input_to_model=features)
     print("Training started ...")
     for epoch in range(1, config.EPOCH + 1):
 
@@ -116,15 +120,15 @@ def train(model, train_data, val_data, id=None):
             val_precision_history.append(val_precision)
             val_recall_history.append(val_recall)
 
-            writer.add_scalar('Loss/train', train_loss, epoch)
-            writer.add_scalar('Accuracy/train', train_accuracy, epoch)
-            writer.add_scalar('Precision/train', train_precision, epoch)
-            writer.add_scalar('Recall/train', train_recall, epoch)
-
-            writer.add_scalar('Loss/validation', val_loss, epoch)
-            writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
-            writer.add_scalar('Precision/validation', val_precision, epoch)
-            writer.add_scalar('Recall/validation', val_precision, epoch)
+            # writer.add_scalar('Loss/train', train_loss, epoch)
+            # writer.add_scalar('Accuracy/train', train_accuracy, epoch)
+            # writer.add_scalar('Precision/train', train_precision, epoch)
+            # writer.add_scalar('Recall/train', train_recall, epoch)
+            #
+            # writer.add_scalar('Loss/validation', val_loss, epoch)
+            # writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
+            # writer.add_scalar('Precision/validation', val_precision, epoch)
+            # writer.add_scalar('Recall/validation', val_precision, epoch)
 
             print(f"Metrics for Epoch {epoch}: Train Loss:{round(train_loss, 8)} \
                     Train Accuracy: {round(train_accuracy, 8)} Train Precision: {round(train_precision, 8)} \
@@ -141,8 +145,8 @@ def train(model, train_data, val_data, id=None):
                                  'val_acc': val_accuracy, 'train_acc': train_accuracy}
                 torch.save(model_content, config.MODEL_DIR / f"model_k_fold_{id}.pt")
 
-    writer.flush()
-    writer.close()
+    # writer.flush()
+    # writer.close()
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
@@ -157,10 +161,8 @@ def train(model, train_data, val_data, id=None):
 
 if __name__ == '__main__':
 
-    parkinson_dataset = ParkinsonsDataset(csv_file='data/pd_speech_features.csv',
-                                          select_feature=config.FEATURES,
-                                          feature_mapping_csv='data/feature_mapping.csv',
-                                          transform=transforms.Compose([ToTensor()]))
+    dataset_path = Path("data/pd_speech_features.csv")
+    feature_mapping_file = Path("data/feature_mapping.csv")
 
     k_fold = 10
     model_histories = []
@@ -170,8 +172,10 @@ if __name__ == '__main__':
 
     for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
-        train_set = torch.utils.data.dataset.Subset(parkinson_dataset, split_detail[f'train_{i}'])
-        val_set = torch.utils.data.dataset.Subset(parkinson_dataset, split_detail[f'val_{i}'])
+        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], select_feature=config.FEATURES,
+                                      feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
+        val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'], select_feature=config.FEATURES,
+                                    feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
 
         train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
         val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=True)
@@ -179,14 +183,16 @@ if __name__ == '__main__':
         # tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
         #                        dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
 
-        # tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-        #                        dropout=config.DROPOUT, feature_length=753)
+        tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+                               dropout=config.DROPOUT, feature_length=753)
 
-        tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-                                    dropout=config.DROPOUT, feature_length=753)
+        # tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        #                    dropout=config.DROPOUT, feature_length=753)
+
+        # tf_model = ConvModel(16, 32, 1024, 512)
 
         history = train(tf_model, train_dataloader, val_dataloader, id=i)
-        print(history)
+        # print(history)
         model_histories.append(history)
 
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]

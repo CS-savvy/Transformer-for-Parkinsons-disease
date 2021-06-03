@@ -13,15 +13,19 @@ warnings.filterwarnings("ignore")
 class ParkinsonsDataset(Dataset):
     """parkinson's dataset."""
 
-    def __init__(self, csv_file, max_length=432, select_feature=None, feature_mapping_csv=None, transform=None):
+    def __init__(self, csv_file, indices, augment=False, max_length=432, select_feature=None, feature_mapping_csv=None,
+                 transform=None):
         """
         Args:
-            csv_file (string): Path to the csv file with features and label.
+            csv_file (Path): Path to the csv file with features and label.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
         self.feature_frame = pd.read_csv(csv_file, skiprows=[0])
         self.feature_frame.reset_index(inplace=True)
+        self.feature_frame = self.feature_frame.loc[indices]
+        self.feature_frame.reset_index(drop=True, inplace=True)
+        self.augment=augment
         self.feature_mapping = pd.read_csv(feature_mapping_csv, index_col='Feature Type')
         self.select_feature = select_feature
         self.max_length = max_length
@@ -55,6 +59,10 @@ class ParkinsonsDataset(Dataset):
             req_feat = feature_map_df.loc[feature]['Features'].tolist()
             self.grouped_frame.append((feature, df[req_feat].copy()))
 
+    def _augmentor(self, data):
+        print()
+        return data
+
     def __len__(self):
         return len(self.feature_frame)
 
@@ -62,7 +70,10 @@ class ParkinsonsDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        datapoint = self.feature_frame.iloc[idx].to_numpy(dtype=np.float32)
+        datapoint = self.feature_frame.iloc[idx]
+        if self.augment:
+            datapoint = self._augmentor(datapoint)
+        datapoint = datapoint.to_numpy(dtype=np.float32)
         uid, features, label = datapoint[0], datapoint[1:-1], datapoint[-1]
         sample = {'UID': uid, 'features': features, 'label': label}
         if self.transform:
@@ -92,6 +103,7 @@ class ToTensor(object):
 
     def __call__(self, sample):
         uid, features, label = sample['UID'], sample['features'], sample['label']
+        # label = 1.0 if label == 1.0 else 0.0 # invert class
         return {'uid': torch.Tensor([uid]),
                 'features': torch.from_numpy(features),
                 'label': torch.Tensor([label])}
