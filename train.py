@@ -15,6 +15,7 @@ from torchvision import transforms
 import torch.nn.functional as F
 import config
 from pathlib import Path
+import os
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -162,7 +163,7 @@ def train(model, train_data, val_data, id=None):
 if __name__ == '__main__':
 
     dataset_path = Path("data/pd_speech_features.csv")
-    feature_mapping_file = Path("data/feature_mapping.csv")
+    feature_mapping_file = Path("data/feature_details.csv")
 
     k_fold = 10
     model_histories = []
@@ -172,8 +173,9 @@ if __name__ == '__main__':
 
     for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
-        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], select_feature=config.FEATURES,
-                                      feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
+        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], augment=config.AUGMENTATION,
+                                      select_feature=config.FEATURES, feature_mapping_csv=feature_mapping_file,
+                                      transform=transforms.Compose([ToTensor()]))
         val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'], select_feature=config.FEATURES,
                                     feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
 
@@ -183,11 +185,11 @@ if __name__ == '__main__':
         # tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
         #                        dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
 
-        tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-                               dropout=config.DROPOUT, feature_length=753)
+        # tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        #                        dropout=config.DROPOUT, feature_length=753)
 
-        # tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-        #                    dropout=config.DROPOUT, feature_length=753)
+        tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+                           dropout=config.DROPOUT, feature_length=753)
 
         # tf_model = ConvModel(16, 32, 1024, 512)
 
@@ -197,3 +199,5 @@ if __name__ == '__main__':
 
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
     print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
+
+    os.system('python eval.py')
