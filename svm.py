@@ -1,4 +1,5 @@
 from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 import json
@@ -22,10 +23,10 @@ data = df.to_numpy(dtype=np.float32)
 
 features, labels = data[:, :-1], data[:, -1]
 
-param_grid = { 'C':[0.1,1,100,1000],
-              'kernel':['rbf','poly','sigmoid','linear'],
-              'degree':[1,2,3,4,5,6],
-              'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
+# param_grid = { 'C':[0.1,1,100,1000],
+#               'kernel':['rbf','poly','sigmoid','linear'],
+#               'degree':[1,2,3,4,5,6],
+#               'gamma': [1, 0.1, 0.01, 0.001, 0.0001]}
 
 with open("data/split_details.json", 'r', encoding='utf8') as f:
     split_detail = json.load(f)
@@ -49,7 +50,8 @@ for i in range(1, k_fold + 1):
     # print(grid.best_params_)
     # y_pred = grid.predict(X_test)
 
-    clf = svm.SVC(kernel='rbf', gamma=0.001, degree=1, C=100)
+    # clf = svm.SVC(kernel='rbf', gamma=0.001, degree=1, C=100)
+    clf = GradientBoostingClassifier()
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     accuracy.append(metrics.accuracy_score(y_test, y_pred))
