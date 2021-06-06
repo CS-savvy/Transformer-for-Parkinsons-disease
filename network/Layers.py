@@ -165,6 +165,18 @@ class FeatureEmbeddings_single(nn.Module):
         return torch.stack(features, dim=1)
 
 
+class HiddenUnit(nn.Module):
+    def __init__(self, hidden, dropout=0.1):
+        super().__init__()
+        self.linear_1 = nn.Linear(hidden, hidden)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = F.relu(self.linear_1(x))
+        x = self.dropout(x)
+        return x
+
+
 if __name__ == '__main__':
 
     dummy_input = torch.randn(5, 700)
