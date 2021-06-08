@@ -24,7 +24,7 @@ def evaluate(model_dir, split_details=None):
     results = []
     val_accuracies = []
     for i in range(1, 11):
-        model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
                     dropout=config.DROPOUT, feature_length=753)
         # model = ConvModel(16, 32, 1024, 512)
         checkpoint = torch.load(model_dir / f"model_k_fold_{i}.pt")
@@ -37,8 +37,10 @@ def evaluate(model_dir, split_details=None):
                                     feature_mapping_csv='data/feature_details.csv', transform=transforms.Compose([ToTensor()]))
         dataloader = DataLoader(val_set, batch_size=len(val_indices), shuffle=False)
         y_preds = []
+        y_scores = []
         y_labels = []
         all_uids = []
+        tp = 0
         with torch.no_grad():
             for batch_data in dataloader:
                 uids = batch_data['uid']
@@ -48,35 +50,43 @@ def evaluate(model_dir, split_details=None):
                 labels = labels.to(device)
 
                 outputs = model(features)
-                preds = F.sigmoid(outputs).round()
-
+                pred_score = F.sigmoid(outputs)
+                preds = pred_score.round()
+                y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
                 y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
                 y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
                 all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
-                accuracy = torch.sum(preds == labels).item() / len(val_indices)
-                precision = metrics.precision_score(y_labels, y_preds)
-                recall = metrics.recall_score(y_labels, y_preds)
-                f1 = metrics.f1_score(y_labels, y_preds)
-                print(f"Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1}")
-                val_accuracies.append(accuracy)
-                if accuracy > max_val_accuracy:
-                    max_val_accuracy = accuracy
-                    best_model = i
+                tp += torch.sum(preds == labels).item()
 
-        results.extend([(u, l, p) for u, l, p in zip(all_uids, y_labels, y_preds)])
+            accuracy = tp / len(val_indices)
+            precision = metrics.precision_score(y_labels, y_preds)
+            recall = metrics.recall_score(y_labels, y_preds)
+            f1 = metrics.f1_score(y_labels, y_preds)
+            print(f"Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1}")
+            val_accuracies.append(accuracy)
+            if accuracy > max_val_accuracy:
+                max_val_accuracy = accuracy
+                best_model = i
+
+        results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(all_uids, y_labels, y_preds, y_scores)])
     print("Avg val accuracy - ", sum(val_accuracies)/ len(val_accuracies))
     print(f"Best Model: {best_model} having accuracy {max_val_accuracy}")
     test_indices = split_details['test']
     test_set = ParkinsonsDataset('data/pd_speech_features.csv', test_indices, select_feature=config.FEATURES,
                                  feature_mapping_csv='data/feature_details.csv', transform=transforms.Compose([ToTensor()]))
     test_dataloader = DataLoader(test_set, batch_size=len(test_indices), shuffle=False)
-    model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+    model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
                 dropout=config.DROPOUT, feature_length=753)
     # model = ConvModel(16, 32, 1024, 512)
     checkpoint = torch.load(model_dir / f"model_k_fold_{best_model}.pt")
     model.load_state_dict(checkpoint['model_state_dict'])
     model.to(device)
     model.eval()
+    y_preds = []
+    y_scores = []
+    y_labels = []
+    all_uids = []
+    tp = 0
     with torch.no_grad():
         for batch_data in test_dataloader:
             uids = batch_data['uid']
@@ -86,20 +96,23 @@ def evaluate(model_dir, split_details=None):
             labels = labels.to(device)
 
             outputs = model(features)
-            preds = F.sigmoid(outputs).round()
-
+            pred_score = F.sigmoid(outputs)
+            preds = pred_score.round()
+            y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
             y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
             y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
             all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
+            tp += torch.sum(preds == labels).item()
 
-            accuracy = torch.sum(preds == labels).item() / len(test_indices)
-            precision = metrics.precision_score(y_labels, y_preds)
-            recall = metrics.recall_score(y_labels, y_preds)
-            f1 = metrics.f1_score(y_labels, y_preds)
-            print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1}")
-        results.extend([(u, l, p) for u, l, p in zip(all_uids, y_labels, y_preds)])
+        accuracy = tp / len(test_indices)
+        precision = metrics.precision_score(y_labels, y_preds)
+        recall = metrics.recall_score(y_labels, y_preds)
+        f1 = metrics.f1_score(y_labels, y_preds)
+        print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1}")
+        results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(all_uids, y_labels, y_preds, y_scores)])
+
     results = sorted(results, key=lambda x: x[0])
-    result_df = pd.DataFrame(results, columns=["UID", 'True Label', 'Prediction'])
+    result_df = pd.DataFrame(results, columns=["UID", 'True Label', 'Prediction', 'Score', 'Match'])
     result_df.to_csv(config.MODEL_DIR / f"eval_result.csv", index=False)
 
 
