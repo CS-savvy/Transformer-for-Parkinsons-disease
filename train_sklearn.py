@@ -2,11 +2,14 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
+from imblearn.over_sampling import SMOTE, BorderlineSMOTE, SVMSMOTE, ADASYN
 import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
 import joblib
+from collections import Counter
+from sklearn.decomposition import PCA
 
 
 this_dir = Path.cwd()
@@ -44,14 +47,31 @@ if not model_dir.exists():
 for i in range(1, k_fold + 1):
     X_train, y_train = features[split_detail[f'train_{i}']], labels[split_detail[f'train_{i}']]
     X_test, y_test = features[split_detail[f'val_{i}']], labels[split_detail[f'val_{i}']]
+
+    ## SMOTE
+    # oversample = ADASYN()
+    # X_train, y_train = oversample.fit_resample(X_train, y_train)
+    # counter = Counter(y_train)
+    # print(counter)
+
+    ## PCA
+    pca = PCA(n_components=100)
+    pca.fit(X_train)
+    X_train = pca.transform(X_train)
+    print(X_train.shape)
+    X_test = pca.transform(X_test)
+    # print(X_train.shape)
+
+    ## Grid search
     # clf = svm.SVC()
     # grid = GridSearchCV(clf, param_grid, n_jobs=12, cv=5, scoring='accuracy', verbose=1)
     # grid.fit(X_train, y_train)
     # print(grid.best_params_)
     # y_pred = grid.predict(X_test)
 
-    # clf = svm.SVC(kernel='rbf', gamma=0.001, degree=1, C=100)
-    clf = GradientBoostingClassifier()
+    ## Classifier
+    # clf = svm.SVC(kernel='rbf', gamma=0.001, degree=1, C=100, probability=True)
+    clf = RandomForestClassifier()
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     accuracy.append(metrics.accuracy_score(y_test, y_pred))

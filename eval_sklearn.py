@@ -14,6 +14,7 @@ def evaluate(model_dir, data, split_details=None):
     max_val_auc = 0
     best_model = None
     results = []
+    val_aucs = []
     for i in range(1, 11):
         val_indices = split_details[f'val_{i}']
         X_val, y_val = features[val_indices], labels[val_indices]
@@ -25,12 +26,14 @@ def evaluate(model_dir, data, split_details=None):
         precision = metrics.precision_score(y_val, y_pred)
         recall = metrics.recall_score(y_val, y_pred)
         roc_auc = metrics.roc_auc_score(y_val, y_score)
+        val_aucs.append(roc_auc)
         print(f"Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | ROC-AUC : {roc_auc}")
         if roc_auc > max_val_auc:
             max_val_auc = roc_auc
             best_model = i
         results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(val_indices, y_val, y_pred, y_score)])
-
+    avg_val_auc = sum(val_aucs) / len(val_aucs)
+    print("Average val AUC :", avg_val_auc)
     print(f"Best Model : {best_model} with AUC {max_val_auc}")
     test_indices = split_details['test']
     X_test, y_test = features[test_indices], labels[test_indices]
