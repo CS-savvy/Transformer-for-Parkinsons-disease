@@ -11,7 +11,7 @@ this_dir = Path.cwd()
 def evaluate(model_dir, data, split_details=None):
     conf_threshold = 0.5
     features, labels = data
-    max_val_accuracy = 0
+    max_val_auc = 0
     best_model = None
     results = []
     for i in range(1, 11):
@@ -24,13 +24,14 @@ def evaluate(model_dir, data, split_details=None):
         accuracy = metrics.accuracy_score(y_val, y_pred)
         precision = metrics.precision_score(y_val, y_pred)
         recall = metrics.recall_score(y_val, y_pred)
-        print(f"Accuracy : {accuracy} | precision : {precision} | Recall : {recall}")
-        if accuracy > max_val_accuracy:
-            max_val_accuracy = accuracy
+        roc_auc = metrics.roc_auc_score(y_val, y_score)
+        print(f"Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | ROC-AUC : {roc_auc}")
+        if roc_auc > max_val_auc:
+            max_val_auc = roc_auc
             best_model = i
         results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(val_indices, y_val, y_pred, y_score)])
 
-    print(f"Best Model : {best_model} with accuracy {max_val_accuracy}")
+    print(f"Best Model : {best_model} with AUC {max_val_auc}")
     test_indices = split_details['test']
     X_test, y_test = features[test_indices], labels[test_indices]
     model_path = model_dir / f"model_k_fold_{best_model}.pkl"
@@ -40,7 +41,8 @@ def evaluate(model_dir, data, split_details=None):
     accuracy = metrics.accuracy_score(y_test, y_pred)
     precision = metrics.precision_score(y_test, y_pred)
     recall = metrics.recall_score(y_test, y_pred)
-    print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall}")
+    roc_auc = metrics.roc_auc_score(y_test, y_score)
+    print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | ROC-AUC : {roc_auc}")
     results.extend([(u, l, p, s, l==p) for u, l, p, s in zip(test_indices, y_test, y_pred, y_score)])
 
     results = sorted(results, key=lambda x: x[0])
