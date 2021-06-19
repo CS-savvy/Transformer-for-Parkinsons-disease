@@ -9,6 +9,7 @@ class Transformer(nn.Module):
     def __init__(self, d_model, N, heads, dropout=0.1, feature_length=700):
         super().__init__()
         self.feature_embedding = FeatureEmbeddings(d_model, d_model//2, feature_length)
+        # self.feature_embedding = FeatureEmbeddings_single(d_model, d_model // 2, feature_length)
         self.encoder = Encoder(d_model, N, heads, dropout)
         self.dropout = nn.Dropout(dropout)
         self.linear_pre = nn.Linear(d_model*feature_length, 2048)
@@ -102,6 +103,8 @@ class DeepMLP(nn.Module):
         print("Hidden UNIT", self.N)
         self.linear_1 = nn.Linear(feature_length, 2048)
         self.dropout_1 = nn.Dropout(dropout)
+        self.linear_2 = nn.Linear(2048, 2048)
+        self.dropout_2 = nn.Dropout(dropout)
         self.hiddenunits = nn.ModuleList([HiddenUnit(2048, dropout) for _ in range(N)])
         self.linear_3 = nn.Linear(2048, 512)
         self.dropout_3 = nn.Dropout(dropout)
@@ -111,6 +114,8 @@ class DeepMLP(nn.Module):
 
         x = F.relu(self.linear_1(features))
         x = self.dropout_1(x)
+        x = F.relu(self.linear_2(x))
+        x = self.dropout_2(x)
         for i in range(self.N):
             x = self.hiddenunits[i](x)
         x = F.relu(self.linear_3(x))

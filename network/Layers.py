@@ -115,8 +115,8 @@ class FeatureEmbedder(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.linear_1(x))
+        x = F.relu(self.linear_2(x))
         x = self.dropout(x)
-        x = self.linear_2(x)
         return x
 
 
