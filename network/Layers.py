@@ -11,16 +11,22 @@ class EncoderLayer(nn.Module):
         self.norm_1 = Norm(d_model)
         self.norm_2 = Norm(d_model)
         self.attn = MultiHeadAttention(heads, d_model, dropout=dropout)
-        self.ff = FeedForward(d_model, dropout=dropout)
+        self.ff = FeedForward(d_model, d_ff=d_model*32, dropout=dropout)
         self.dropout_1 = nn.Dropout(dropout)
         self.dropout_2 = nn.Dropout(dropout)
 
+    # def forward(self, x, mask):
+    #     x2 = self.norm_1(x)
+    #     x = x + self.dropout_1(self.attn(x2, x2, x2, mask))
+    #     x2 = self.norm_2(x)
+    #     x = x + self.dropout_2(self.ff(x2))
+    #     return x
+
     def forward(self, x, mask):
-        x2 = self.norm_1(x)
-        x = x + self.dropout_1(self.attn(x2, x2, x2, mask))
-        x2 = self.norm_2(x)
-        x = x + self.dropout_2(self.ff(x2))
-        return x
+        x1 = x + self.dropout_1(self.attn(x, x, x, mask))
+        x2 = self.norm_1(x1)
+        x3 = x2 + self.dropout_2(self.ff(x2))
+        return self.norm_2(x3)
 
 
 class Norm(nn.Module):
@@ -175,6 +181,24 @@ class HiddenUnit(nn.Module):
         x = F.relu(self.linear_1(x))
         x = self.dropout(x)
         return x
+
+
+class AttentionReplacement(nn.Module):
+
+    def __init__(self, d_model, features=32):
+        super().__init__()
+        self.features = features
+        self.feature_layers = self._get_clones(HiddenUnit(d_model), features)
+
+    def _get_clones(self, module, N):
+        return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
+    def forward(self, x):
+        output = []
+        for i in range(self.features):
+            output.append(self.feature_layers[i](x[:, i, :]))
+        return torch.stack(output, dim=1)
+
 
 
 if __name__ == '__main__':

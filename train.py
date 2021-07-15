@@ -1,9 +1,10 @@
 import json
 import numpy as np
+import config
 import torch
-
-torch.manual_seed(450)
-
+import random
+torch.manual_seed(config.PYTORCH_SEED)
+random.seed(config.PYTHON_SEED)
 from torch.utils.data import DataLoader
 from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup, DeepMLP, ConvModel
 from DataLoader import ParkinsonsDataset, ToTensor
@@ -13,7 +14,6 @@ from network.FocalLoss import FocalLoss
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.nn.functional as F
-import config
 from pathlib import Path
 import os
 
@@ -40,7 +40,7 @@ def train(model, train_data, val_data, id=None):
     val_recall_history = []
 
     max_val_accuracy = 0
-
+    min_val_loss = 23952309523094
     # writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     # sample_data = train_data.__iter__().next()
     # features = sample_data['features']
@@ -80,7 +80,7 @@ def train(model, train_data, val_data, id=None):
             # print("Mini batch loss", loss.item())
         else:
             train_loss = sum(train_loss_mini_batch) / len(train_loss_mini_batch)
-            train_accuracy = sum(train_accuracy_mini_batch) / train_data.sampler.num_samples
+            train_accuracy = sum(train_accuracy_mini_batch) / len(y_preds)
             train_loss_history.append(train_loss)
             train_accuracy_history.append(train_accuracy)
             train_precision = metrics.precision_score(y_labels, y_preds)
@@ -93,6 +93,7 @@ def train(model, train_data, val_data, id=None):
             val_y_preds = []
             val_y_labels = []
             val_uids = []
+            val_y_scores = []
             model.eval()
             with torch.no_grad():
                 for batch_data in val_data:
@@ -104,8 +105,9 @@ def train(model, train_data, val_data, id=None):
 
                     outputs = model(features)
                     loss = criterion(outputs, labels)
-                    preds = F.sigmoid(outputs).round()
-
+                    pred_score = F.sigmoid(outputs)
+                    preds = pred_score.round()
+                    val_y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
                     val_y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
                     val_y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
                     val_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
@@ -113,11 +115,12 @@ def train(model, train_data, val_data, id=None):
                     val_loss_mini_batch.append(loss.item())
 
             val_loss = sum(val_loss_mini_batch) / len(val_loss_mini_batch)
-            val_accuracy = sum(val_accuracy_mini_batch) / val_data.sampler.num_samples
+            val_accuracy = sum(val_accuracy_mini_batch) / len(val_y_preds)
             val_loss_history.append(val_loss)
             val_accuracy_history.append(val_accuracy)
             val_precision = metrics.precision_score(val_y_labels, val_y_preds)
             val_recall = metrics.recall_score(val_y_labels, val_y_preds)
+            val_auc = metrics.roc_auc_score(val_y_labels, val_y_scores)
             val_precision_history.append(val_precision)
             val_recall_history.append(val_recall)
 
@@ -136,18 +139,31 @@ def train(model, train_data, val_data, id=None):
                     Train Recall: {round(train_recall, 8)}")
             print(f"Metrics for Epoch {epoch}: val Loss:{round(val_loss, 8)} \
                     Val Accuracy: {round(val_accuracy, 8)} Val Precision: {round(val_precision, 8)} \
-                    Val Recall: {round(val_recall, 8)}")
+                    Val Recall: {round(val_recall, 8)} Val AUC: {val_auc}")
 
-            if val_accuracy > max_val_accuracy:
+            if epoch > 3 and val_accuracy > max_val_accuracy:
                 print("Saving model ....")
                 max_val_accuracy = val_accuracy
                 model_content = {'epoch': epoch, 'model_state_dict': model.state_dict(),
-                                 'optimizer_state_dict': optimizer.state_dict(),
-                                 'val_acc': val_accuracy, 'train_acc': train_accuracy}
+                                 'val_auc': val_auc, 'val_acc': val_accuracy,
+                                 'train_acc': train_accuracy}
                 torch.save(model_content, config.MODEL_DIR / f"model_k_fold_{id}.pt")
+
+            # if val_loss < min_val_loss:
+            #     print("Saving model ....")
+            #     min_val_loss = val_loss
+            #     model_content = {'epoch': epoch, 'model_state_dict': model.state_dict(),
+            #                      'optimizer_state_dict': optimizer.state_dict(),
+            #                      'val_loss': val_loss, 'val_acc': val_accuracy,
+            #                      'train_acc': train_accuracy}
+            #     torch.save(model_content, config.MODEL_DIR / f"model_k_fold_{id}.pt")
 
     # writer.flush()
     # writer.close()
+
+    # model_content = {'model_state_dict': model.state_dict()}
+    # torch.save(model_content, config.MODEL_DIR / f"model_k_fold_{id}.pt")
+
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
@@ -173,23 +189,23 @@ if __name__ == '__main__':
 
     for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
-        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], augment=config.AUGMENTATION,
-                                      select_feature=config.FEATURES, feature_mapping_csv=feature_mapping_file,
-                                      transform=transforms.Compose([ToTensor()]))
-        val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'], select_feature=config.FEATURES,
-                                    feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
+        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], augment=config.AUGMENTATION, max_features=config.MAX_FEATURE,
+                                      feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]),
+                                      SMOTE_FLAG=True, feature_score_file='data/imp_feature_xgboost.pkl')
+        val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'], feature_score_file='data/imp_feature_xgboost.pkl',
+                                    max_features=config.MAX_FEATURE, feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
 
         train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
-        val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=True)
+        val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=False)
 
         # tf_model = TransformerGroup(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
         #                        dropout=config.DROPOUT, feature_set=[21, 3, 4, 4, 22, 84, 182, 432])
 
-        # tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-        #                        dropout=config.DROPOUT, feature_length=753)
+        tf_model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+                               dropout=config.DROPOUT, feature_length=config.MAX_FEATURE)
 
-        tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-                           dropout=config.DROPOUT, feature_length=753)
+        # tf_model = MLP(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+        #                    dropout=config.DROPOUT, feature_length=config.MAX_FEATURE)
 
         # tf_model = ConvModel(16, 32, 1024, 512)
 
@@ -200,4 +216,4 @@ if __name__ == '__main__':
     max_val_accuracies = [max(h['val_accuracy']) for h in model_histories]
     print(f"Average val accuracy across {k_fold}-Fold: {np.average(max_val_accuracies)}")
 
-    os.system('python eval.py')
+    # os.system('python eval.py')

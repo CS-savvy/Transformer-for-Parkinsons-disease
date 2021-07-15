@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from network.Encoder import Encoder
-from network.Layers import FeatureEmbeddings, FeatureEmbeddings_single, FeatureEmbeddingsGroup, HiddenUnit
+from network.Layers import FeatureEmbeddings, FeatureEmbeddings_single, FeatureEmbeddingsGroup, HiddenUnit, AttentionReplacement
 import torch.nn.functional as F
 
 
@@ -11,6 +11,7 @@ class Transformer(nn.Module):
         self.feature_embedding = FeatureEmbeddings(d_model, d_model//2, feature_length)
         # self.feature_embedding = FeatureEmbeddings_single(d_model, d_model // 2, feature_length)
         self.encoder = Encoder(d_model, N, heads, dropout)
+        # self.encoder = AttentionReplacement(d_model, feature_length)
         self.dropout = nn.Dropout(dropout)
         self.linear_pre = nn.Linear(d_model*feature_length, 2048)
         self.linear_final = nn.Linear(2048, 1)
@@ -105,7 +106,7 @@ class DeepMLP(nn.Module):
         self.dropout_1 = nn.Dropout(dropout)
         self.linear_2 = nn.Linear(2048, 2048)
         self.dropout_2 = nn.Dropout(dropout)
-        self.hiddenunits = nn.ModuleList([HiddenUnit(2048, dropout) for _ in range(N)])
+        # self.hiddenunits = nn.ModuleList([HiddenUnit(2048, dropout) for _ in range(N)])
         self.linear_3 = nn.Linear(2048, 512)
         self.dropout_3 = nn.Dropout(dropout)
         self.linear_4 = nn.Linear(512, 1)
@@ -116,8 +117,8 @@ class DeepMLP(nn.Module):
         x = self.dropout_1(x)
         x = F.relu(self.linear_2(x))
         x = self.dropout_2(x)
-        for i in range(self.N):
-            x = self.hiddenunits[i](x)
+        # for i in range(self.N):
+        #     x = self.hiddenunits[i](x)
         x = F.relu(self.linear_3(x))
         x = self.dropout_3(x)
         x = self.linear_4(x)

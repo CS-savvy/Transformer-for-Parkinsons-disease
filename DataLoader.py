@@ -1,21 +1,25 @@
 import torch
+import config
 import pandas as pd
 import numpy as np
 import random
+random.seed(config.PYTHON_SEED)
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from pathlib import Path
+from imblearn.over_sampling import SMOTE, BorderlineSMOTE, SVMSMOTE, ADASYN
 import config
 # Ignore warnings
 import warnings
+import pickle
 warnings.filterwarnings("ignore")
 
 
 class ParkinsonsDataset(Dataset):
     """parkinson's dataset."""
 
-    def __init__(self, csv_file, indices, augment=None, max_length=432, select_feature=None, feature_mapping_csv=None,
-                 transform=None):
+    def __init__(self, csv_file, indices, augment=None, max_features=None, feature_score_file=None, feature_mapping_csv=None,
+                 transform=None, SMOTE_FLAG=False):
         """
         Args:
             csv_file (Path): Path to the csv file with features and label.
@@ -23,25 +27,34 @@ class ParkinsonsDataset(Dataset):
                 on a sample.
         """
         self.feature_frame = pd.read_csv(csv_file, skiprows=[0])
+        self.feature_score_file = feature_score_file
+        self.max_features = max_features if max_features else self.feature_frame.shape[1] - 2 # minus 2 for id and class
+        self._filter_feature()
+
         self.feature_frame.reset_index(inplace=True)
         self.feature_frame = self.feature_frame.loc[indices]
         self.feature_frame.reset_index(drop=True, inplace=True)
         self.augment = augment
         self.feature_mapping = pd.read_csv(feature_mapping_csv, index_col='Feature Type')
-        self.select_feature = select_feature
-        self.max_length = max_length
-        self.grouped_frame = []
+
+        # self.grouped_frame = []
         self._preprocess()
         self.parkinsons_frame = self.feature_frame[self.feature_frame['class'] == 1].reset_index(drop=True)
         self.non_parkinsons_frame = self.feature_frame[self.feature_frame['class'] == 0].reset_index(drop=True)
-        # self._filter_feature()
+        self.SMOTE_FLAG = SMOTE_FLAG
+        if self.SMOTE_FLAG:
+            self.numpy_data = self.feature_frame.to_numpy(dtype=np.float32)
+            self.numpy_feature = self.numpy_data[:, 1:-1]
+            self.numpy_label = self.numpy_data[:, -1]
+            self._oversample()
         self.transform = transform
-        self._group()
+        # self._group()
 
     def _preprocess(self):
         print("Normalizing data..")
         df = self.feature_frame
-        df.drop(columns=['id'], inplace=True)
+        if 'id' in df:
+            df.drop(columns=['id'], inplace=True)
         skip_column = ['index', 'gender', 'class']
         columns = list(df.columns)
         columns = [c for c in columns if c not in skip_column]
@@ -51,18 +64,26 @@ class ParkinsonsDataset(Dataset):
             df[col] = (df[col] - mean)/std
         self.feature_frame = df
 
-    def _filter_feature(self):
-        if self.select_feature:
-            feature_map_df = self.feature_mapping
-            req_feat = feature_map_df.loc[self.select_feature]['Features'].tolist()
-            self.feature_frame = self.feature_frame[req_feat + ['class']]
+    def _oversample(self):
+        oversampler = ADASYN(random_state=config.SMOTE_SEED)
+        self.numpy_feature, self.numpy_label = oversampler.fit_resample(self.numpy_feature, self.numpy_label)
 
-    def _group(self):
-        df = self.feature_frame
-        feature_map_df = self.feature_mapping
-        for feature in self.select_feature:
-            req_feat = feature_map_df.loc[feature]['Features'].tolist()
-            self.grouped_frame.append((feature, df[req_feat].copy()))
+    def _filter_feature(self):
+        if self.feature_score_file:
+            with open(self.feature_score_file, 'rb') as handle:
+                scores = pickle.load(handle)
+            # scores = sorted(scores, key=lambda x: x[1], reverse=True)
+            to_keep = [col for col, _ in scores[:self.max_features]]
+            # random.Random(80476).shuffle(to_keep)
+            to_keep.append('class')
+            self.feature_frame = self.feature_frame[to_keep]
+
+    # def _group(self):
+    #     df = self.feature_frame
+    #     feature_map_df = self.feature_mapping
+    #     for feature in self.select_feature:
+    #         req_feat = feature_map_df.loc[feature]['Features'].tolist()
+    #         self.grouped_frame.append((feature, df[req_feat].copy()))
 
     def _augmentor(self, data):
         selected_feature = data.sample(self.augment)
@@ -75,11 +96,24 @@ class ParkinsonsDataset(Dataset):
         return data
 
     def __len__(self):
+        if self.SMOTE_FLAG:
+            # print("Total rows", len(self.numpy_feature))
+            return len(self.numpy_feature)
         return len(self.feature_frame)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
+
+        if self.SMOTE_FLAG:
+            features = self.numpy_feature[idx]
+            label = self.numpy_label[idx]
+            uid = 99
+            sample = {'UID': uid, 'features': features, 'label': label}
+            if self.transform:
+                sample = self.transform(sample)
+
+            return sample
 
         datapoint = self.feature_frame.iloc[idx]
         if self.augment:
