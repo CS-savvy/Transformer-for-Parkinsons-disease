@@ -7,3 +7,11 @@
 ## Performance
 
 ![ROC Curve](./asset/images/ROC.jpg)
+
+### Installation
+
+`conda env create -f environment.yml`
+
+### Train
+
+`python3 train.py`
