@@ -3,8 +3,6 @@ import numpy as np
 import config
 import torch
 import random
-torch.manual_seed(config.PYTORCH_SEED)
-random.seed(config.PYTHON_SEED)
 from torch.utils.data import DataLoader
 from network.Model import Transformer, MLP, FeatureEmbedMLP, TransformerGroup, DeepMLP, ConvModel
 from DataLoader import ParkinsonsDataset, ToTensor
@@ -17,6 +15,8 @@ import torch.nn.functional as F
 from pathlib import Path
 import os
 
+torch.manual_seed(config.PYTORCH_SEED)
+random.seed(config.PYTHON_SEED)
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print("using device : ", device)
@@ -92,12 +92,12 @@ def train(model, train_data, val_data, id=None):
             val_accuracy_mini_batch = []
             val_y_preds = []
             val_y_labels = []
-            val_uids = []
+            # val_uids = []
             val_y_scores = []
             model.eval()
             with torch.no_grad():
                 for batch_data in val_data:
-                    uids = batch_data['uid']
+                    # uids = batch_data['uid']
                     features = batch_data['features']
                     labels = batch_data['label']
                     features = features.to(device)
@@ -110,7 +110,7 @@ def train(model, train_data, val_data, id=None):
                     val_y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
                     val_y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
                     val_y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
-                    val_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
+                    # val_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
                     val_accuracy_mini_batch.append(torch.sum(preds == labels).item())
                     val_loss_mini_batch.append(loss.item())
 
@@ -189,11 +189,18 @@ if __name__ == '__main__':
 
     for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
-        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'], augment=config.AUGMENTATION, max_features=config.MAX_FEATURE,
-                                      feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]),
-                                      SMOTE_FLAG=True, feature_score_file='data/imp_feature_xgboost.pkl')
-        val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'], feature_score_file='data/imp_feature_xgboost.pkl',
-                                    max_features=config.MAX_FEATURE, feature_mapping_csv=feature_mapping_file, transform=transforms.Compose([ToTensor()]))
+        train_set = ParkinsonsDataset(dataset_path, split_detail[f'train_{i}'],
+                                      augment=config.AUGMENTATION,
+                                      max_features=config.MAX_FEATURE,
+                                      feature_mapping_csv=feature_mapping_file,
+                                      transform=transforms.Compose([ToTensor()]),
+                                      SMOTE_FLAG=True,
+                                      feature_score_file='data/xgboost_feature_ranking.json')
+        val_set = ParkinsonsDataset(dataset_path, split_detail[f'val_{i}'],
+                                    feature_score_file='data/xgboost_feature_ranking.json',
+                                    max_features=config.MAX_FEATURE,
+                                    feature_mapping_csv=feature_mapping_file,
+                                    transform=transforms.Compose([ToTensor()]))
 
         train_dataloader = DataLoader(train_set, batch_size=config.BATCH_SIZE, shuffle=True)
         val_dataloader = DataLoader(val_set, batch_size=config.BATCH_SIZE, shuffle=False)

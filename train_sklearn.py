@@ -17,52 +17,54 @@ import joblib
 from collections import Counter
 from sklearn.decomposition import PCA
 import os
-
+import pickle
+import config
+from utils.utils import filter_feature, id_to_index
 
 this_dir = Path.cwd()
-csv_file= this_dir / "data/pd_speech_features.csv"
+csv_file = this_dir / "data/pd_speech_features.csv"
 df = pd.read_csv(csv_file, skiprows=[0])
-df.drop(columns=['id'], inplace=True)
-skip_column = ['gender', 'class']
-columns =list(df.columns)
+
+df = filter_feature(df, 'data/xgboost_feature_ranking.json', max_features=32)
+# df.drop(columns=['id'], inplace=True)
+skip_column = ['id', 'gender', 'class']
+columns = list(df.columns)
 columns = [c for c in columns if c not in skip_column]
 for col in columns:
     df[col] = (df[col] - df[col].mean())/df[col].std(ddof=0)
 
 data = df.to_numpy(dtype=np.float32)
+print("Data shape : ", data.shape)
+features, labels = data[:, 1:-1], data[:, -1]
 
-features, labels = data[:, :-1], data[:, -1]
-
-# param_grid = {
-#     'bootstrap': [True],
-#     'max_depth': [80, 90, 100, 110],
-#     'max_features': [2, 3],
-#     'min_samples_leaf': [3, 4, 5],
-#     'min_samples_split': [8, 10, 12],
-#     'n_estimators': [100, 200, 300, 1000]
-# }
+# param_grid = {"learning_rate"    : [0.05, 0.10, 0.15, 0.20, 0.25, 0.30 ] ,
+#  "max_depth"        : [ 3, 4, 5, 6, 8, 10, 12, 15],
+#  "min_child_weight" : [ 1, 3, 5, 7 ],
+#  "gamma"            : [ 0.0, 0.1, 0.2 , 0.3, 0.4 ],
+#  "colsample_bytree" : [ 0.3, 0.4, 0.5 , 0.7 ] }
 
 with open("data/split_details.json", 'r', encoding='utf8') as f:
     split_detail = json.load(f)
 
 k_fold = 10
-
 accuracy = []
 precision = []
 recall = []
 
-model_dir = Path.cwd() / "models/SVM/"
+model_dir = Path.cwd() / "models/xgboost/"
 if not model_dir.exists():
     model_dir.mkdir(parents=True)
 
 for i in range(1, k_fold + 1):
-    X_train, y_train = features[split_detail[f'train_{i}']], labels[split_detail[f'train_{i}']]
-    X_test, y_test = features[split_detail[f'val_{i}']], labels[split_detail[f'val_{i}']]
+    train_indices = id_to_index(df, split_detail[f'train_{i}'])
+    test_indices = id_to_index(df, split_detail[f'val_{i}'])
+    X_train, y_train = features[train_indices], labels[train_indices]
+    X_test, y_test = features[test_indices], labels[test_indices]
 
     # SMOTE
-    # oversample = SMOTE()
+    # oversample = SMOTE(random_state=config.SMOTE_SEED)
     # oversample =BorderlineSMOTE()
-    oversample = ADASYN()
+    oversample = ADASYN(random_state=config.SMOTE_SEED)
 
     X_train, y_train = oversample.fit_resample(X_train, y_train)
     counter = Counter(y_train)
@@ -76,24 +78,21 @@ for i in range(1, k_fold + 1):
     # X_test = pca.transform(X_test)
 
     ## Classifier
-    # clf = svm.SVC(probability=True)
-    # clf = RandomForestClassifier()
-    # clf = AdaBoostClassifier()
-    # clf = GradientBoostingClassifier()
-    clf = XGBClassifier()
-    # clf = MLPClassifier()
+    # clf = svm.SVC(probability=True, random_state=config.PYTHON_SEED)
+    # clf = RandomForestClassifier(random_state=config.PYTHON_SEED)
+    # clf = AdaBoostClassifier(random_state=config.PYTHON_SEED)
+    # clf = GradientBoostingClassifier(random_state=config.PYTHON_SEED)
+    clf = XGBClassifier(random_state=config.PYTHON_SEED)
+    # # clf = XGBClassifier(colsample_bytree=0.3, gamma=0.0, learning_rate=0.2, max_depth=10, min_child_weight=1)
     # clf = KNeighborsClassifier()
-    # clf = DecisionTreeClassifier()
-    # cnlf = LogisticRegression(max_iter=1000)
+    # clf = DecisionTreeClassifier(random_state=config.PYTHON_SEED)
+    # clf = LogisticRegression(max_iter=1000, random_state=config.PYTHON_SEED)
     # clf = GaussianNB()
-
-    ## Grid search
+    # # Grid search
     # grid = GridSearchCV(clf, param_grid, n_jobs=12, cv=5, scoring='accuracy', verbose=1)
     # grid.fit(X_train, y_train)
     # print(grid.best_params_)
     # y_pred = grid.predict(X_test)
-
-
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     accuracy.append(metrics.accuracy_score(y_test, y_pred))
@@ -101,11 +100,12 @@ for i in range(1, k_fold + 1):
     recall.append(metrics.recall_score(y_test, y_pred))
     _ = joblib.dump(clf, model_dir / f"model_k_fold_{i}.pkl", compress=0)
 
+
 print("Avg accuracy:", sum(accuracy)/len(accuracy))
 print("Avg precision:", sum(precision)/len(precision))
 print("Avg recall:", sum(recall)/len(recall))
 
-os.system('python eval_sklearn.py')
+# os.system('python eval_sklearn.py')
 
 # def evaluate(model_dir, data, split_details=None):
 #     conf_threshold = 0.5

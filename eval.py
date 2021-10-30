@@ -35,10 +35,10 @@ def evaluate(model_dir, threshold=0.5, split_details=None):
         model.eval()
 
         val_indices = split_details[f'val_{i}']
-        val_set = ParkinsonsDataset(dataset_path, val_indices, feature_score_file='data/imp_feature_xgboost.pkl',
+        val_set = ParkinsonsDataset(dataset_path, val_indices, feature_score_file='data/xgboost_feature_ranking.json',
                                     max_features=config.MAX_FEATURE, feature_mapping_csv=feature_mapping_file,
                                     transform=transforms.Compose([ToTensor()]))
-        dataloader = DataLoader(val_set, batch_size=len(val_indices), shuffle=False)
+        dataloader = DataLoader(val_set, batch_size=len(val_indices*3), shuffle=False)
         y_preds = []
         y_scores = []
         y_labels = []
@@ -46,11 +46,11 @@ def evaluate(model_dir, threshold=0.5, split_details=None):
         tp = 0
         with torch.no_grad():
             for batch_data in dataloader:
-                uids = batch_data['uid']
+                # uids = batch_data['uid']
                 features = batch_data['features']
                 labels = batch_data['label']
                 features = features.to(device)
-                print(features.shape)
+                # print(features.shape)
                 labels = labels.to(device)
 
                 outputs = model(features)
@@ -60,10 +60,10 @@ def evaluate(model_dir, threshold=0.5, split_details=None):
                 y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
                 y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
                 y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
-                all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
+                # all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
                 tp += torch.sum(preds == labels).item()
 
-            accuracy = tp / len(val_indices)
+            accuracy = tp / len(val_indices*3)
             precision = metrics.precision_score(y_labels, y_preds)
             recall = metrics.recall_score(y_labels, y_preds)
             roc_auc = metrics.roc_auc_score(y_labels, y_scores)
@@ -74,55 +74,55 @@ def evaluate(model_dir, threshold=0.5, split_details=None):
                 max_auc_score = roc_auc
                 best_model = i
 
-        results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(all_uids, y_labels, y_preds, y_scores)])
+        results.extend([(l, p, s, l == p) for l, p, s in zip(y_labels, y_preds, y_scores)])
     print(f"Avg AUC accuracy - ", sum(val_aucs)/ len(val_aucs))
     print(f"Best Model: {best_model} having AUC {max_auc_score}")
-    test_indices = split_details['test']
-    test_set = ParkinsonsDataset(dataset_path, test_indices, feature_score_file='data/imp_feature_xgboost.pkl',
-                                 max_features=config.MAX_FEATURE, feature_mapping_csv=feature_mapping_file,
-                                 transform=transforms.Compose([ToTensor()]))
-    test_dataloader = DataLoader(test_set, batch_size=len(test_indices), shuffle=False)
-    model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
-                        dropout=config.DROPOUT, feature_length=config.MAX_FEATURE)
-    # model = ConvModel(16, 32, 1024, 512)
-    checkpoint = torch.load(model_dir / f"model_k_fold_{best_model}.pt")
-    model.load_state_dict(checkpoint['model_state_dict'])
-    model.to(device)
-    model.eval()
-    y_preds = []
-    y_scores = []
-    y_labels = []
-    all_uids = []
-    tp = 0
-    with torch.no_grad():
-        for batch_data in test_dataloader:
-            uids = batch_data['uid']
-            features = batch_data['features']
-            labels = batch_data['label']
-            features = features.to(device)
-            labels = labels.to(device)
-
-            outputs = model(features)
-            pred_score = F.sigmoid(outputs)
-            # preds = pred_score.round()
-            preds = (pred_score > threshold) * 1.0
-            y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
-            y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
-            y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
-            all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
-            tp += torch.sum(preds == labels).item()
-
-        accuracy = tp / len(test_indices)
-        precision = metrics.precision_score(y_labels, y_preds)
-        recall = metrics.recall_score(y_labels, y_preds)
-        f1 = metrics.f1_score(y_labels, y_preds)
-        roc_auc = metrics.roc_auc_score(y_labels, y_scores)
-        print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1} | ROC-AUC : {roc_auc}")
-        results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(all_uids, y_labels, y_preds, y_scores)])
-
-    results = sorted(results, key=lambda x: x[0])
-    result_df = pd.DataFrame(results, columns=["UID", 'True Label', 'Prediction', 'Score', 'Match'])
-    result_df.to_csv(config.MODEL_DIR / f"eval_result.csv", index=False)
+    # test_indices = split_details['test']
+    # test_set = ParkinsonsDataset(dataset_path, test_indices, feature_score_file='data/imp_feature_xgboost.pkl',
+    #                              max_features=config.MAX_FEATURE, feature_mapping_csv=feature_mapping_file,
+    #                              transform=transforms.Compose([ToTensor()]))
+    # test_dataloader = DataLoader(test_set, batch_size=len(test_indices), shuffle=False)
+    # model = Transformer(config.EMBEDDING_DIM, config.ENCODER_STACK, config.ATTENTION_HEAD,
+    #                     dropout=config.DROPOUT, feature_length=config.MAX_FEATURE)
+    # # model = ConvModel(16, 32, 1024, 512)
+    # checkpoint = torch.load(model_dir / f"model_k_fold_{best_model}.pt")
+    # model.load_state_dict(checkpoint['model_state_dict'])
+    # model.to(device)
+    # model.eval()
+    # y_preds = []
+    # y_scores = []
+    # y_labels = []
+    # all_uids = []
+    # tp = 0
+    # with torch.no_grad():
+    #     for batch_data in test_dataloader:
+    #         uids = batch_data['uid']
+    #         features = batch_data['features']
+    #         labels = batch_data['label']
+    #         features = features.to(device)
+    #         labels = labels.to(device)
+    #
+    #         outputs = model(features)
+    #         pred_score = F.sigmoid(outputs)
+    #         # preds = pred_score.round()
+    #         preds = (pred_score > threshold) * 1.0
+    #         y_scores.extend(list(pred_score.cpu().detach().numpy().reshape(1, -1)[0]))
+    #         y_preds.extend(list(preds.cpu().detach().numpy().reshape(1, -1)[0]))
+    #         y_labels.extend(list(labels.cpu().detach().numpy().reshape(1, -1)[0]))
+    #         all_uids.extend(list(uids.numpy().reshape(1, -1)[0]))
+    #         tp += torch.sum(preds == labels).item()
+    #
+    #     accuracy = tp / len(test_indices)
+    #     precision = metrics.precision_score(y_labels, y_preds)
+    #     recall = metrics.recall_score(y_labels, y_preds)
+    #     f1 = metrics.f1_score(y_labels, y_preds)
+    #     roc_auc = metrics.roc_auc_score(y_labels, y_scores)
+    #     print(f"Test - Accuracy : {accuracy} | precision : {precision} | Recall : {recall} | F1 : {f1} | ROC-AUC : {roc_auc}")
+    #     results.extend([(u, l, p, s, l == p) for u, l, p, s in zip(all_uids, y_labels, y_preds, y_scores)])
+    #
+    # results = sorted(results, key=lambda x: x[0])
+    # result_df = pd.DataFrame(results, columns=["UID", 'True Label', 'Prediction', 'Score', 'Match'])
+    # result_df.to_csv(config.MODEL_DIR / f"eval_result.csv", index=False)
     return accuracy
 
 

@@ -12,6 +12,7 @@ import config
 # Ignore warnings
 import warnings
 import pickle
+import json
 warnings.filterwarnings("ignore")
 
 
@@ -30,10 +31,10 @@ class ParkinsonsDataset(Dataset):
         self.feature_score_file = feature_score_file
         self.max_features = max_features if max_features else self.feature_frame.shape[1] - 2 # minus 2 for id and class
         self._filter_feature()
-
-        self.feature_frame.reset_index(inplace=True)
-        self.feature_frame = self.feature_frame.loc[indices]
-        self.feature_frame.reset_index(drop=True, inplace=True)
+        self.feature_frame['valid'] = self.feature_frame.apply(lambda x: x['id'] in indices, axis=1)
+        self.feature_frame = self.feature_frame[self.feature_frame['valid']]
+        self.feature_frame = self.feature_frame.drop(columns=['id', 'valid'])
+        self.feature_frame = self.feature_frame.reset_index(drop=True)
         self.augment = augment
         self.feature_mapping = pd.read_csv(feature_mapping_csv, index_col='Feature Type')
 
@@ -44,7 +45,7 @@ class ParkinsonsDataset(Dataset):
         self.SMOTE_FLAG = SMOTE_FLAG
         if self.SMOTE_FLAG:
             self.numpy_data = self.feature_frame.to_numpy(dtype=np.float32)
-            self.numpy_feature = self.numpy_data[:, 1:-1]
+            self.numpy_feature = self.numpy_data[:, :-1]
             self.numpy_label = self.numpy_data[:, -1]
             self._oversample()
         self.transform = transform
@@ -70,12 +71,13 @@ class ParkinsonsDataset(Dataset):
 
     def _filter_feature(self):
         if self.feature_score_file:
-            with open(self.feature_score_file, 'rb') as handle:
-                scores = pickle.load(handle)
-            # scores = sorted(scores, key=lambda x: x[1], reverse=True)
+            with open(self.feature_score_file, 'r', encoding='utf8') as handle:
+                scores = list(json.load(handle).items())
+            scores = sorted(scores, key=lambda x: x[1], reverse=True)
             to_keep = [col for col, _ in scores[:self.max_features]]
             # random.Random(80476).shuffle(to_keep)
             to_keep.append('class')
+            to_keep = ['id'] + to_keep
             self.feature_frame = self.feature_frame[to_keep]
 
     # def _group(self):
@@ -108,22 +110,19 @@ class ParkinsonsDataset(Dataset):
         if self.SMOTE_FLAG:
             features = self.numpy_feature[idx]
             label = self.numpy_label[idx]
-            uid = 99
-            sample = {'UID': uid, 'features': features, 'label': label}
+            sample = {'features': features, 'label': label}
             if self.transform:
                 sample = self.transform(sample)
-
             return sample
 
         datapoint = self.feature_frame.iloc[idx]
         if self.augment:
             datapoint = self._augmentor(datapoint.copy())
         datapoint = datapoint.to_numpy(dtype=np.float32)
-        uid, features, label = datapoint[0], datapoint[1:-1], datapoint[-1]
-        sample = {'UID': uid, 'features': features, 'label': label}
+        features, label = datapoint[:-1], datapoint[-1]
+        sample = {'features': features, 'label': label}
         if self.transform:
             sample = self.transform(sample)
-
         return sample
 
     # def __getitem__(self, idx):
@@ -147,10 +146,9 @@ class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-        uid, features, label = sample['UID'], sample['features'], sample['label']
+        features, label = sample['features'], sample['label']
         # label = 1.0 if label == 1.0 else 0.0 # invert class
-        return {'uid': torch.Tensor([uid]),
-                'features': torch.from_numpy(features),
+        return {'features': torch.from_numpy(features),
                 'label': torch.Tensor([label])}
 
 
