@@ -16,7 +16,7 @@ class DatasetManager():
                             'Parkinsion-mx': ParkinsionMxDataset, 'Philippine': PhilippineDataset,
                             'Emotion': EmotionDataset}
 
-    def selector(self, name: str):
+    def get_dataset(self, name: str):
         return self.dataset_map[name]
 
 
@@ -49,7 +49,6 @@ class ParkinsonsDataset(Dataset):
             self._oversample()
 
     def _preprocess(self):
-        print("Normalizing data..")
         df = self.feature_frame
         if 'id' in df:
             df.drop(columns=['id'], inplace=True)
@@ -75,6 +74,9 @@ class ParkinsonsDataset(Dataset):
             to_keep.append('class')
             to_keep = ['id'] + to_keep
             self.feature_frame = self.feature_frame[to_keep]
+
+    def get_num_feature_length(self):
+        return self.max_features
 
     def __len__(self):
         if self.SMOTE:
@@ -353,7 +355,7 @@ if __name__ == "__main__":
 
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)
-    dataset_name = config['Exp Details']['Dataset']
+    dataset_name = config['ExpDetails']['Dataset']
     data_split_file = config['Datasets'][dataset_name]['Split']
     with open(data_split_file, 'r', encoding='utf8') as f:
         split_detail = json.load(f)
@@ -364,4 +366,3 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(dataset, batch_size=4, shuffle=True, collate_fn=dataset.collate)
     for i_batch, (batched_features, batched_target) in enumerate(train_dataloader):
         print(i_batch, batched_features.size(), batched_target.size())
-        break

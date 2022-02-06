@@ -8,6 +8,11 @@ ExpDetails:
   Dataset: Parkinsion #  Valid:- Parkinsion, Gender, Parkinsion-mx, Philippine, Emotion
   Network: Transformer # Valid:- Transformer
 
+Train:
+  Epoch: 20
+  LR: 0.0001
+  BatchSize: 32
+  Loss: BinaryCrossEntropy
 
 Datasets:
   Parkinsion:
@@ -108,7 +113,3 @@ Networks:
     HD-1: 1024
     HD-2: 512
     OutDim: 1
-
-Train:
-  LR: 0.0001
-  BatchSize: 32
