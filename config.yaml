@@ -1,8 +1,12 @@
-# datasets
+Setup:
+  ModelDir: models/Tf-exp
+  Device: gpu # gpu / cpu
+  PytorchSeed: 1893
+  Seed: 123146427
 
-Exp Details:
-  Dataset: Emotion #
-  Network: Transformer #
+ExpDetails:
+  Dataset: Parkinsion #  Valid:- Parkinsion, Gender, Parkinsion-mx, Philippine, Emotion
+  Network: Transformer # Valid:- Transformer
 
 
 Datasets:
@@ -14,6 +18,7 @@ Datasets:
     NumFeatures : 96
     Smote: True
     SmoteSeed: 722152
+    K-Fold: 10
 
   Gender:
     MainCSV: data/Gender/cleaned_gender.csv
@@ -23,6 +28,7 @@ Datasets:
     NumFeatures: 16
     Smote: True
     SmoteSeed: 722152
+    K-Fold: 10
 
   Parkinsion-mx:
     MainCSV: data/parkinsion-mx/train_data.csv
@@ -32,6 +38,7 @@ Datasets:
     NumFeatures: 16
     Smote: True
     SmoteSeed: 722152
+    K-Fold: 10
 
   Philippine:
     MainCSV: data/philippine/cleaned_phillippine.csv
@@ -39,6 +46,7 @@ Datasets:
     FeatureImp: data/philippine/xgboost_feature_ranking.json
     Split: data/philippine/split_details.json
     NumFeatures: 16
+    K-Fold: 10
 
   Emotion:
     MainCSV: data/Emotion/ANAD_Normalized.csv
@@ -47,16 +55,60 @@ Datasets:
     NumFeatures: 16
     Smote: True
     SmoteSeed: 722152
+    K-Fold: 10
 
+Networks:
+  Transformer:
+    EmbeddingDim : 64
+    EncoderStack : 6
+    AttentionHead : 1
+    Dropout : 0.1
+    HD-1: 2048
+    OutDim: 1
 
-Default Network:
-  EMBEDDING_DIM : 64
-  ENCODER_STACK : 6
-  ATTENTION_HEAD : 1
-  DROPOUT : 0.1
+  TransformerGroup:
+    EmbeddingDim: 64
+    EncoderStack: 6
+    AttentionHead: 1
+    Dropout: 0.1
+    HD-1: 2048
+    OutDim: 1
+    FeatureSet:
+      - Baseline Features
+      - Intensity Parameters
+      - Formant Frequencies
+      - Bandwidth Parameters
+      - Vocal Fold
+      - MFCC
+      - Wavelet Features
+      - TQWT Features
 
+  FeatureEmbedMLP:
+    EmbeddingDim: 64
+    Dropout: 0.1
+    HD-1: 2048
+    OutDim: 1
+
+  MLP:
+    Dropout: 0.1
+    HD-1: 2048
+    HD-2: 512
+    OutDim: 1
+
+  DeepMLP:
+    Stack: 6
+    Dropout: 0.1
+    HD-1: 2048
+    HD-2: 512
+    OutDim: 1
+
+  ConvModel:
+    Conv1: 16
+    Conv2: 32
+    HD-1: 1024
+    HD-2: 512
+    OutDim: 1
 
 Train:
   LR: 0.0001
-  BATCH_SIZE: 32
-  SMOTE_SEED : 722152
+  BatchSize: 32
