@@ -159,6 +159,28 @@ def init(params: dict) -> dict:
     return params
 
 
+def filterConfigByDtype(params, accepted_dtype):
+    temp = {}
+    for key, val in params.items():
+        if type(val) in accepted_dtype:
+            temp[key] = val
+    return temp
+
+
+def save_config(params, d_name, m_name):
+    output_dir = params['Setup']['ModelDir']
+    params['Setup']['ModelDir'] = output_dir.as_posix()
+    acceptable_dtype = [int, str, float]
+    config_group = {'Dataset': params['Datasets'][d_name], 'Network': params['Networks'][m_name],
+                    'Setup': params['Setup'], 'Train': params['Train']}
+    final_config = {}
+    for key, cnf in config_group.items():
+        final_config[key] = filterConfigByDtype(cnf, acceptable_dtype)
+
+    with open(output_dir / 'exp_config.yaml', 'w', encoding='utf8') as f:
+        yaml.safe_dump(final_config, f)
+
+
 if __name__ == '__main__':
 
     config_file = Path('config.yaml')
@@ -184,6 +206,7 @@ if __name__ == '__main__':
     config['Train']['writer'] = SummaryWriter(config['Setup']['ModelDir'] / 'events')
     k_fold = dataset_config['K-Fold']
 
+    save_conf = True
     for i in range(1, k_fold+1):
         print(f"Started {i} of {k_fold}-fold training .... ")
         train_set = dataset(split_detail[f'train_{i}'], dataset_config)
@@ -195,6 +218,9 @@ if __name__ == '__main__':
         model_config['num_features'] = val_set.get_num_feature_length()
         config['Train']['model'] = mm.get_model(model_name)(model_config)
         train_config = config['Train'].copy().update(config['Setup'])
+        if save_conf:
+            save_config(config, dataset_name, model_name)
+            save_conf = False
         train_model(i, train_config)
 
     config['Train']['writer'].flush()
